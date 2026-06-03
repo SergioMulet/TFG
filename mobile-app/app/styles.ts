@@ -1,87 +1,66 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
-const COLORS = {
-  deepOcean: '#0A2540',  
-  seaBlue: '#007AFF',
-  skyBlue: '#E6F0FA',    
-  background: '#F4F7FA', 
-  white: '#FFFFFF',      
-  textMuted: '#627D98',  
-  indicatorOk: '#34C759' 
+export const COLORS = {
+  background: "#E8EEFA",
+  cardBackground: "#B3C7F0",
+  border: "#071D64",
+  text: "#071D64",
+  placeholder: "#071d6481",
 };
 
 const globalStyles = StyleSheet.create({
   screenContainer: {
     flex: 1,
     backgroundColor: COLORS.background,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
 
-  settingsCard:{
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 24,
-    width: '100%',
-    maxWidth: 340,
-    marginBottom: 20,
+  menuBar:{
     flexDirection: 'row',
-    alignItems: 'center',
-    // shadows
-    shadowColor: COLORS.deepOcean,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 3, 
-  },
-  
-  boatCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 24,
+    justifyContent: 'flex-end',
     width: '100%',
-    maxWidth: 340,
-    marginBottom: 20,
-    flexDirection: 'column',
-    alignItems: 'center',
-    // shadows
-    shadowColor: COLORS.deepOcean,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 3, 
+  },
+
+  flagEmoji: {
+    fontSize: 50,
+  },
+
+  boatCard: {
+    backgroundColor: COLORS.cardBackground,
+    borderColor: "#071D64",
+    borderRadius: "5%",
+    borderWidth: 1,
+    overflow: "hidden",
+    padding: "5%",
+    width: "100%",
+    margin: "5%",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 
   boatTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: COLORS.deepOcean,
-    textAlign: 'center',
-    marginBottom: 8,
+    fontSize: 36,
+    fontWeight: "bold",
+    color: COLORS.text,
+    textAlign: "center",
   },
 
-  boatSubtitle: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    fontWeight: '500',
+  coordinatesTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: COLORS.text,
+    textAlign: "center",
+    marginBottom: "5%",
   },
 
-  statusBadge: {
-    backgroundColor: COLORS.skyBlue,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
+  textInfo: {
+    fontSize: 18,
+    color: COLORS.text,
+    textAlign: "left",
   },
-
-  statusText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.deepOcean,
-  }
 });
 
-export default globalStyles
+export default globalStyles;

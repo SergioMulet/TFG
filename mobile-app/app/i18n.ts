@@ -1,13 +1,15 @@
 const translations = {
   en: {
     notTransmitting: "Tracking disabled",
-    transmitting: "Transmitting coordinates",
-    changeLanguage: "Cambiar al español"
+    transmitting: "Sending coordinates",
+    changeLanguage: "Cambiar al español",
+    boatName: "Boat name"
   },
   es: {
     notTransmitting: "Seguimiento desactivado",
-    transmitting: "Transmitiendo coordenadas",
-    changeLanguage: "Switch to English"
+    transmitting: "Enviando coordenadas",
+    changeLanguage: "Switch to English",
+    boatName: "Nombre del barco"
   }
 };
 
