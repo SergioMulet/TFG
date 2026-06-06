@@ -2,13 +2,13 @@ name: "CodeQL Analysis"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   analyze:
-    name: Analyze (${{ matrix.language }})
+    name: Analyze Code
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -18,22 +18,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'go', 'javascript-typescript' ]
+        language: ["go", "javascript-typescript"]
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-        queries: security-extended 
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
 
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v3
+      - name: Build Go Backend
+        if: matrix.language == 'go' && (github.head_ref == 'main_server' || github.ref_name == 'main')
+        run: |
+          cd ./main_server
+          go build ./...
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:${{ matrix.language }}"
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
