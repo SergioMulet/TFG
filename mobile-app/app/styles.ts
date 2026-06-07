@@ -8,59 +8,73 @@ export const COLORS = {
   placeholder: "#071d6481",
 };
 
-const globalStyles = StyleSheet.create({
-  screenContainer: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
+const globalStyles = (isPhone: boolean) =>
+  StyleSheet.create({
+    scrollContainer: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
 
-  menuBar:{
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    width: '100%',
-  },
+    screenContainer: {
+      backgroundColor: COLORS.background,
+      justifyContent: "center",
+      alignItems: "center",
+      marginHorizontal: isPhone ? 0 : "25%",
+      marginTop: isPhone ? "20%" : 0,
+      padding: 20,
+    },
 
-  flagEmoji: {
-    fontSize: 50,
-  },
+    dropdownContainer: {
+      backgroundColor: COLORS.cardBackground,
+      borderColor: "#071D64",
+      borderRadius: 15,
+      borderWidth: 1,
+    },
 
-  boatCard: {
-    backgroundColor: COLORS.cardBackground,
-    borderColor: "#071D64",
-    borderRadius: "5%",
-    borderWidth: 1,
-    overflow: "hidden",
-    padding: "5%",
-    width: "100%",
-    margin: "5%",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
+    menuBar: {
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      width: "100%",
+    },
 
-  boatTitle: {
-    fontSize: 36,
-    fontWeight: "bold",
-    color: COLORS.text,
-    textAlign: "center",
-  },
+    flagEmoji: {
+      fontSize: 50,
+    },
 
-  coordinatesTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: COLORS.text,
-    textAlign: "center",
-    marginBottom: "5%",
-  },
+    boatCard: {
+      backgroundColor: COLORS.cardBackground,
+      borderColor: "#071D64",
+      borderRadius: 15,
+      borderWidth: 1,
 
-  textInfo: {
-    fontSize: 18,
-    color: COLORS.text,
-    textAlign: "left",
-  },
-});
+      padding: "5%",
+      width: "100%",
+      margin: "5%",
+      flexDirection: "column",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+
+    boatTitle: {
+      fontSize: 36,
+      fontWeight: "bold",
+      color: COLORS.text,
+      textAlign: "center",
+    },
+
+    coordinatesTitle: {
+      fontSize: 22,
+      fontWeight: "bold",
+      color: COLORS.text,
+      textAlign: "center",
+      marginBottom: "5%",
+    },
+
+    textInfo: {
+      fontSize: 18,
+      color: COLORS.text,
+      textAlign: "left",
+    },
+  });
 
 export default globalStyles;
