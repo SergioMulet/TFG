@@ -52,6 +52,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("An error occured while initilizing supabase: %v", err)
 	}
+
 	router := gin.Default()
 
 	router.GET("/health", func(c *gin.Context) {
