@@ -102,7 +102,7 @@ export default function DashboardScreen() {
           <Switch
             trackColor={{ false: "#D1D5DB", true: "#00e0b7" }}
             thumbColor={COLORS.background}
-            onValueChange={toggleGPS}
+            onValueChange={(value) => toggleGPS(value, boatName || "Barco_Prueba", "sergiokma15@gmail.com")}
             value={gpsActive}
           />
         </View>

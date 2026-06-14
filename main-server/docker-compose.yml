@@ -1,17 +1,15 @@
-version: '3.8'
-
 services:
   # MQTT Broker - Mosquitto
   mosquitto:
     image: eclipse-mosquitto:latest
     container_name: maritime_mosquitto
     ports:
-      - "1883:1883" # 
+      - "1883:1883" # Pure TCP 
+      - "9001:9001" # webSockets
     volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
       - mosquitto_data:/mosquitto/data
       - mosquitto_log:/mosquitto/log
-    # for testing
-    command: mosquitto -c /mosquitto-no-auth.conf
 
   # InfluxDB
   influxdb:
@@ -23,9 +21,9 @@ services:
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_INIT_USERNAME}
       - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUX_INIT_PASSWORD} 
-      - DOCKER_INFLUXDB_INIT_ORG=${INFLUX_INIT_ORG}
-      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUX_INIT_BUCKET}
-      - DOCKER_INFLUXDB_INIT_RETENTION=${INFLUX_INIT_RETENTION}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUX_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUX_BUCKET}
+      - DOCKER_INFLUXDB_INIT_RETENTION=${INFLUX_RETENTION}
     volumes:
       - influxdb_data:/var/lib/influxdb2
       - influxdb_config:/etc/influxdb2
