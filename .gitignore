@@ -3,3 +3,6 @@ mobile-app/node_modules/
 mobile-app/.expo
 mobile-app/expo-env.d.ts
 mobile-app/.github/
+
+# Main server
+main-server/.env
