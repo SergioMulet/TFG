@@ -2,79 +2,45 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
-	"strings"
+
+	"main_server/handlers"
+	"main_server/middleware"
+	"main_server/mqtt"
+	"main_server/repositories"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/supabase-community/supabase-go"
 )
-
-func AuthMiddleWare(supabaseClient *supabase.Client) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication header needed"})
-			c.Abort()
-			return
-		}
-
-		// standart format: "Bearer <token>"
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "El formato debe ser 'Bearer <token>'"})
-			c.Abort()
-			return
-		}
-
-		tokenString := parts[1]
-		authenticatedUser := supabaseClient.Auth.WithToken(tokenString)
-
-		user, err := authenticatedUser.GetUser()
-		if err != nil || user == nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token inválido o caducado"})
-			c.Abort()
-			return
-		}
-
-		c.Set("userID", user.ID)
-		c.Next()
-	}
-}
 
 func main() {
 	_ = godotenv.Load()
-	supabaseURL := os.Getenv("SUPABASE_URL")
-	supabaseKey := os.Getenv("SUPABASE_SECRET_KEY")
 
-	supabaseClient, err := supabase.NewClient(supabaseURL, supabaseKey, nil)
-	if err != nil {
-		log.Fatalf("An error occured while initilizing supabase: %v", err)
-	}
+	// start db
+	repositories.InitInfrastructure()
+	defer repositories.Infra.Influx.Close()
+
+	// start mqtt in background
+	mqtt.StartSubscriber()
 
 	router := gin.Default()
 
 	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "up",
-			"message": "Maritime Identification Backend running perfectly",
-		})
+		c.JSON(200, gin.H{"status": "up", "message": "Backend running perfectly"})
 	})
 
-	protected := router.Group("/api")
-	protected.Use(AuthMiddleWare(supabaseClient))
+	// routes
+	api := router.Group("/api")
+	api.Use(middleware.AuthMiddleWare(repositories.Infra.Supabase))
 	{
-		protected.POST("/users", func (c *gin.Context) {
-			userID, _ := c.Get("userID")
+		api.POST("/telemetry/sync", handlers.SyncOfflineTelemetry)
+	}
 
-		c.JSON(http.StatusOK, gin.H{
-				"status":  "authenticated",
-				"message": "Welcome to Maritime Identification Platform",
-				"uid":     userID,
-		})
-	})
-}
-
-	router.Run(":8080")
+	// deploy server
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Printf("HTTP server ready at: %s", port)
+	router.Run(":" + port)
 }
