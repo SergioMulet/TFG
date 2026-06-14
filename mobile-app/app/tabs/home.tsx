@@ -2,7 +2,6 @@ import {
   Text,
   View,
   Switch,
-  TouchableOpacity,
   TextInput,
   ScrollView,
   useWindowDimensions,
@@ -11,8 +10,6 @@ import {
 import globalStyles, { COLORS } from "../styles";
 import useLanguage from "../../internazionalization/language-context";
 import translations from "../../internazionalization/i18n";
-
-import * as Location from "expo-location";
 
 import { useState } from "react";
 import { Dropdown } from "react-native-element-dropdown";

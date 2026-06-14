@@ -1,15 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Text,
   View,
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
-  Image,
   useWindowDimensions,
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
