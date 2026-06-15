@@ -21,6 +21,7 @@ type TelemetryPayload struct {
 }
 
 func SyncOfflineTelemetry(c *gin.Context) {
+	fmt.Println("[SyncOff] offline synchronization...")
 	var batch []TelemetryPayload
 	if err := c.ShouldBindJSON(&batch); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

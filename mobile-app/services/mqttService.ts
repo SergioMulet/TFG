@@ -77,6 +77,10 @@ class MqttService {
       }
     }
   }
+
+  public getClient(){
+    return this.client;
+  }
 }
 
 export const mqttService = new MqttService();
