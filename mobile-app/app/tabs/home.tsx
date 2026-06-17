@@ -5,16 +5,16 @@ import {
   TextInput,
   ScrollView,
   useWindowDimensions,
-} from "react-native";
+} from 'react-native';
 
-import globalStyles, { COLORS } from "../styles";
-import useLanguage from "../../internazionalization/language-context";
-import translations from "../../internazionalization/i18n";
+import globalStyles, { COLORS } from '../styles';
+import useLanguage from '../../internazionalization/language-context';
+import translations from '../../internazionalization/i18n';
 
-import { useState } from "react";
-import { Dropdown } from "react-native-element-dropdown";
-import LanguageSelector from "@/components/languageSelector";
-import { useLocationTracker } from "@/hooks/use_location_tracker";
+import { useState } from 'react';
+import { Dropdown } from 'react-native-element-dropdown';
+import LanguageSelector from '@/components/languageSelector';
+import { useLocationTracker } from '@/hooks/location/use_location_tracker';
 
 export default function DashboardScreen() {
   const { width } = useWindowDimensions();
@@ -23,22 +23,22 @@ export default function DashboardScreen() {
   let { lang } = useLanguage();
   let strings = translations[lang];
 
-  const { location, gpsActive, coordinatesType, toggleGPS } =
-    useLocationTracker();
+  const { location, gpsActive, toggleGPS } = useLocationTracker();
+  const coordinatesType = gpsActive ? 'current' : location ? 'last' : null;
 
   const [boatName, setBoatName] = useState<string | null>(null);
   const styles = globalStyles(isPhone);
 
   const SHIP_TYPES = [
-    { label: strings.cargo, value: "cargo" },
-    { label: strings.tanker, value: "tanker" },
-    { label: strings.cruise, value: "cruise" },
-    { label: strings.fishing, value: "fishing" },
-    { label: strings.yacht, value: "yacht" },
-    { label: strings.military, value: "military" },
-    { label: strings.tug, value: "tug" },
-    { label: strings.boat, value: "boat" },
-    { label: strings.other, value: "other" },
+    { label: strings.cargo, value: 'cargo' },
+    { label: strings.tanker, value: 'tanker' },
+    { label: strings.cruise, value: 'cruise' },
+    { label: strings.fishing, value: 'fishing' },
+    { label: strings.yacht, value: 'yacht' },
+    { label: strings.military, value: 'military' },
+    { label: strings.tug, value: 'tug' },
+    { label: strings.boat, value: 'boat' },
+    { label: strings.other, value: 'other' },
   ];
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [isFocus, setIsFocus] = useState(false);
@@ -50,7 +50,7 @@ export default function DashboardScreen() {
         <View style={styles.boatCard}>
           <TextInput
             style={styles.title}
-            value={boatName ?? ""}
+            value={boatName ?? ''}
             onChangeText={(text) => setBoatName(text)}
             placeholder={strings.boatName}
             placeholderTextColor={COLORS.placeholder}
@@ -81,7 +81,7 @@ export default function DashboardScreen() {
         {coordinatesType != null && (
           <View style={styles.boatCard}>
             <Text style={styles.secondTitle}>
-              {coordinatesType === "current" ? strings.current : strings.last}
+              {coordinatesType === 'current' ? strings.current : strings.last}
             </Text>
             <Text style={styles.text}>
               {strings.longitude}: {location?.coords.longitude}
@@ -92,17 +92,17 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        <View style={[styles.boatCard, { flexDirection: "row" }]}>
+        <View style={[styles.boatCard, { flexDirection: 'row' }]}>
           <Text style={styles.text}>
-            {gpsActive
-              ? `🟢 ${strings.transmitting}`
-              : `🔴 ${strings.notTransmitting}`}
+            {gpsActive ? `🟢 ${strings.transmitting}` : `🔴 ${strings.notTransmitting}`}
           </Text>
 
           <Switch
-            trackColor={{ false: "#D1D5DB", true: "#00e0b7" }}
+            trackColor={{ false: '#D1D5DB', true: '#00e0b7' }}
             thumbColor={COLORS.background}
-            onValueChange={(value) => toggleGPS(value, boatName || "Barco_Prueba", "sergiokma15@gmail.com")}
+            onValueChange={(value) =>
+              toggleGPS(value, boatName || 'Barco_Prueba', 'sergiokma15@gmail.com')
+            }
             value={gpsActive}
           />
         </View>
