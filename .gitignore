@@ -6,3 +6,6 @@ mobile-app/.github/
 
 # Main server
 main-server/.env
+
+#Root
+.prettierrc
