@@ -29,7 +29,7 @@ export class SendingLocalState implements TrackerState {
       }
 
       // HTTP request to mian server
-      const response = await fetch('http://192.168.1.135:8080/api/telemetry/sync', {
+      const response = await fetch('http://192.168.1.132:8080/api/telemetry/sync', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

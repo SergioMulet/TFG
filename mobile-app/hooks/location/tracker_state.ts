@@ -7,5 +7,5 @@ export interface TrackerState {
     userEmail: string,
   ): void;
 
-  publishCoordinates(): Promise<void> | void;
+  publishCoordinates(context: any): Promise<void> | void;
 }

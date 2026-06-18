@@ -1,7 +1,6 @@
 import { LocationObject } from 'expo-location';
 import { TrackerState } from '../tracker_state';
 import { mqttService } from '@/services/mqttService';
-import { locationTracker } from '../location_tracker';
 import { sqliteService } from '@/services/sqliteService';
 
 export class SendingState implements TrackerState {
@@ -27,7 +26,7 @@ export class SendingState implements TrackerState {
     this.topic = `maritime/boats/${uniqueBoatKey}/telemetry`;
   }
 
-  async publishCoordinates(): Promise<void> {
+  async publishCoordinates(context: any): Promise<void> {
     if (this.telemetryPayload) {
       let success = mqttService.publish(
         this.topic,
@@ -35,7 +34,7 @@ export class SendingState implements TrackerState {
       );
       if (!success) {
         console.log('MQTT connection lost, switching to local state...');
-        locationTracker.setTrackerState(locationTracker.getSendingLocalState());
+        context.setTrackerState(context.getSendingLocalState());
 
         await sqliteService.saveCoordinate(
           this.telemetryPayload.boat_name,

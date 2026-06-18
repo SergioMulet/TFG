@@ -14,7 +14,7 @@ class MqttService {
       clientId: `mobile_app_${Math.random().toString(16).substr(2, 8)}`,
       clean: true,
       connectTimeout: 4000,
-      reconnectPeriod: 2000,
+      reconnectPeriod: 0,
     });
 
     this.client.on('connect', () => {
@@ -22,7 +22,7 @@ class MqttService {
     });
 
     this.client.on('error', (err) => {
-      console.error('[MQTT] Error in MQTT mobile phone client', err);
+      console.error('--- [MQTT] Error in MQTT mobile phone client ---');
     });
 
     this.client.on('close', () => {
@@ -59,17 +59,10 @@ class MqttService {
   }
 
   // Send telemtry JSON
-  public publish(topic: string, message: string) {
+  public publish(topic: string, message: string): boolean {
     if (this.client && this.client.connected) {
-      this.client.publish(topic, message, { qos: 1 }, (err) => {
-        if (err) {
-          console.error(`Error while publishing in ${topic}:`, err);
-          return false;
-        } else {
-          console.log(`Coordinates sent to Mosquitto -> Topic: ${topic}`);
-          return true;
-        }
-      });
+      this.client.publish(topic, message, { qos: 1 });
+      return true;
     } else {
       console.warn('Trying to publish but MQTT is offline.');
       return false;

@@ -38,7 +38,7 @@ export class LocationTracker {
     if (!isConnected) return false;
 
     try {
-      await this.trackerState.publishCoordinates();
+      await this.trackerState.publishCoordinates(this);
     } catch (error) {
       console.error('Sync to main server failed, staying in local mode:', error);
       return false;
@@ -59,7 +59,7 @@ export class LocationTracker {
     });
 
     this.trackerState.saveCoordinates(location, boatName, userEmail);
-    await this.trackerState.publishCoordinates();
+    await this.trackerState.publishCoordinates(this);
 
     this.onUpdate?.({ location });
   }
@@ -98,6 +98,7 @@ export class LocationTracker {
       this.intervalId = null;
     }
     this.trackerState = this.notSendingState;
+    mqttService.disconnect();
     this.onUpdate = null;
   }
 }
