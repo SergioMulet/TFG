@@ -33,7 +33,7 @@ export class SendingLocalState implements TrackerState {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(offlineTelemetry),
       });
