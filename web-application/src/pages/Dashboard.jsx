@@ -8,12 +8,16 @@ import {
   Drawer,
   Divider,
 } from '@mui/material';
-import ShipSidebar from '../components/ShipSidebar';
+import Sidebar from '../components/Sidebar';
 import Map from '../components/Map';
 
-const drawerWidth = 340; // boats corntol panel width
-
 export default function Dashboard() {
+  const [selectedShipId, setSelectedShipId] = useState(null);
+
+  const handleBackToFilters = () => {
+    setSelectedShipId(null);
+  };
+
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       <CssBaseline />
@@ -24,33 +28,30 @@ export default function Dashboard() {
         sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: '#1e293b' }}
       >
         <Toolbar>
-          <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
-            ⚓ Maritime Telemetry Dashboard
+          <Typography variant="h1" noWrap component="div" sx={{ fontWeight: 'bold' }}>
+            ⚓ Ships tracker
           </Typography>
         </Toolbar>
       </AppBar>
 
-      {/* Left panel*/}
-      <Drawer
-        variant="permanent"
+      {/* Sidebar */}
+      <Box
         sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
+          height: '100vh',
+          pt: 8,
+          borderRight: '1px solid #e0e0e0',
+          bgcolor: 'background.paper',
         }}
       >
-        <Toolbar />
-        <Box sx={{ overflow: 'auto', p: 2 }}>
-          <ShipSidebar />
-        </Box>
-      </Drawer>
+        <Sidebar selectedShipId={selectedShipId} onBackToFilters={handleBackToFilters} />
+      </Box>
 
       {/* Main component*/}
       <Box component="main" sx={{ flexGrow: 1, height: '100vh', position: 'relative' }}>
         <Toolbar />
         {/* Map container */}
         <Box sx={{ width: '100%', height: 'calc(100vh - 64px)' }}>
-          <Map />
+          <Map selectedShipId={selectedShipId} onSelectShip={setSelectedShipId} />
         </Box>
       </Box>
     </Box>
