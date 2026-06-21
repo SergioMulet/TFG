@@ -46,6 +46,7 @@ func SyncOfflineTelemetry(c *gin.Context) {
 	}
 
 	writeAPI.Flush()
+	BroadcastShips()
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "success",

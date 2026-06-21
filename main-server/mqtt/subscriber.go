@@ -41,7 +41,10 @@ func StartSubscriber() {
 			payload.Timestamp,
 		)
 		writeAPI.WritePoint(p)
+		writeAPI.Flush()
 		fmt.Printf("--- [MQTT] telemetry from: %s ---\n", payload.BoatName)
+
+		handlers.BroadcastShips()
 	})
 
 	client := mqtt.NewClient(opts)

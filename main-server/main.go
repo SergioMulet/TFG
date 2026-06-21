@@ -9,6 +9,7 @@ import (
 	"main_server/mqtt"
 	"main_server/repositories"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -24,6 +25,7 @@ func main() {
 	mqtt.StartSubscriber()
 
 	router := gin.Default()
+	router.Use(cors.Default())
 
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "up", "message": "Backend running perfectly"})
@@ -35,6 +37,10 @@ func main() {
 	{
 		api.POST("/telemetry/sync", handlers.SyncOfflineTelemetry)
 	}
+
+	router.GET("/api/ships", handlers.GetShips)
+	router.GET("/api/ships/:id", handlers.GetShipDetails)
+	router.GET("/ws/ships", handlers.ShipsWebSocket)
 
 	// deploy server
 	port := os.Getenv("PORT")
