@@ -6,3 +6,6 @@ mobile-app/.github/
 
 # Main server
 main-server/.env
+
+# Web application
+web-application/node_modules/
