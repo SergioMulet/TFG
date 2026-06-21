@@ -19,7 +19,7 @@ export function useLocationTracker() {
           setGpsActive(false);
         }
       } else {
-        locationTracker.stopTracking();
+        await locationTracker.stopTracking();
         setGpsActive(false);
       }
     },

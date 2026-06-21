@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
+import "@/hooks/location/background_location_task";
 import { LanguageProvider } from "../internazionalization/language-context";
 import { supabase } from "../supabaseClient";
 
