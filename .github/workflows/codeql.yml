@@ -21,15 +21,16 @@ jobs:
             language: "go"
           - branch: "mobile_application"
             language: "javascript-typescript"
+          - branch: "web_application"
+            language: "javascript-typescript"
 
-    if: github.head_ref == 'main_server' || github.head_ref == 'mobile_application'
+    if: github.head_ref == matrix.branch
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        if: github.head_ref == matrix.branch
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
@@ -42,7 +43,6 @@ jobs:
           go build ./...
 
       - name: Perform CodeQL Analysis
-        if: github.head_ref == matrix.branch
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{ matrix.language }}"

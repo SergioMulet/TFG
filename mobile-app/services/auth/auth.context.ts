@@ -1,6 +1,6 @@
 // services/auth/authContext.ts
-import { supabase } from "@/supabaseClient";
-import { AuthStrategy, AuthResponse } from "./type";
+import { supabase } from '@/supabaseClient';
+import { AuthStrategy, AuthResponse } from './type';
 
 export class AuthContext {
   private strategy!: AuthStrategy;
@@ -13,9 +13,7 @@ export class AuthContext {
   // Ejecuta la estrategia que esté activa en ese momento
   async executeAuth(payload?: any): Promise<AuthResponse> {
     if (!this.strategy) {
-      throw new Error(
-        "No se ha seleccionado ninguna estrategia de autenticación.",
-      );
+      throw new Error('No se ha seleccionado ninguna estrategia de autenticación.');
     }
     return this.strategy.authenticate(payload);
   }
@@ -23,14 +21,22 @@ export class AuthContext {
   async signOut(): Promise<{ success: boolean; error?: string }> {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) console.error("Error al cerrar sesión:", error.message);
+      if (error) console.error('Error al cerrar sesión:', error.message);
       return { success: true };
     } catch (err: any) {
       return {
         success: false,
-        error: err.message || "Unexpected error while signing out",
+        error: err.message || 'Unexpected error while signing out',
       };
     }
+  }
+
+  async getToken() {
+    const { data } = await supabase.auth.getSession();
+    let token = data.session?.access_token;
+    if (token === null)
+      throw new Error("Error while getting the user's token, it is null");
+    return token;
   }
 }
 
