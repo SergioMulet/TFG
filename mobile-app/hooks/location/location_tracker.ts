@@ -79,6 +79,10 @@ export class LocationTracker {
     userEmail: string,
     onUpdate: (update: TrackerUpdate) => void,
   ): Promise<void> {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      throw new Error('Location permission not granted');
+    }
     this.onUpdate = onUpdate;
 
     const connected = await this.connectMqtt();

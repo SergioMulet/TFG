@@ -9,10 +9,15 @@ export function useLocationTracker() {
   const toggleGPS = useCallback(
     async (isActive: boolean, boatName: string, userEmail: string) => {
       if (isActive) {
-        setGpsActive(true);
-        await locationTracker.startTracking(boatName, userEmail, (update) => {
-          setLocation(update.location);
-        });
+        try {
+          await locationTracker.startTracking(boatName, userEmail, (update) => {
+            setLocation(update.location);
+          });
+          setGpsActive(true);
+        } catch (error) {
+          console.error('Could not start location tracking:', error);
+          setGpsActive(false);
+        }
       } else {
         locationTracker.stopTracking();
         setGpsActive(false);
