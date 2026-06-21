@@ -1,40 +1,37 @@
-import React from 'react';
-import {
-  Typography,
-  Box,
-  Divider,
-  IconButton,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Button,
-} from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Typography, Box, Divider, IconButton, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import LabelIcon from '@mui/icons-material/Label';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
 import RouteIcon from '@mui/icons-material/Route';
 
 // Importamos tus recursos de internacionalización idénticos al móvil
 import useLanguage from '../internationalization/LanguageContext';
 import translations from '../internationalization/i18n';
+import { shipLoader } from '../services/shipLoader';
 
-export default function DetailsSidebar({ shipId, onBack }) {
+const CARD_COLOR = '#1e293b';
+
+const cardSx = {
+  backgroundColor: CARD_COLOR,
+  color: 'white',
+  borderRadius: '16px',
+  textAlign: 'center',
+  py: 2,
+  px: 2,
+  mb: 3,
+};
+
+export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
   const { lang } = useLanguage();
   const strings = translations[lang];
 
-  // TTemporally hardcoded
-  const shipMockData = {
-    name: `Alpha ${shipId}`,
-    type: 'cargo',
-    lat: 41.3851,
-    lng: 2.1734,
-  };
+  const [shipDetails, setShipDetails] = useState([]);
 
-  const shipTypeLabel = strings[shipMockData.type] || shipMockData.type;
+  useEffect(() => {
+    shipLoader.loadDetails(shipId, setShipDetails);
+  }, [shipId]);
 
   const handleDisplayRoute = () => {
-    console.log(`Routes request...: ${shipId}`);
+    onDisplayRoute(shipDetails.route24 || []);
   };
 
   return (
@@ -43,8 +40,9 @@ export default function DetailsSidebar({ shipId, onBack }) {
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        minWidth: 240,
+        minWidth: 300,
         backgroundColor: '#b8ebff',
+        p: 2,
       }}
     >
       {/* Back */}
@@ -52,51 +50,54 @@ export default function DetailsSidebar({ shipId, onBack }) {
         <IconButton onClick={onBack} size="small" edge="start">
           <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h2" sx={{ fontWeight: 'bold', noWrap: true }}>
-          {strings.shipDetails}
+        <Typography variant="h2">{strings.shipDetails}</Typography>
+      </Box>
+
+      <Divider sx={{ mb: 3, borderColor: CARD_COLOR }} />
+
+      {/* Ship type */}
+      <Box sx={cardSx}>
+        <Typography variant="h3" sx={{ color: 'white', fontWeight: 'bold' }}>
+          {strings.shipType}
+        </Typography>
+        <Typography variant="body1" sx={{ color: 'white' }}>
+          {shipDetails.type}
         </Typography>
       </Box>
 
-      <Divider sx={{ mb: 2 }} />
+      {/* Coordinates */}
+      <Box sx={cardSx}>
+        <Typography variant="h3" sx={{ color: 'white', fontWeight: 'bold', mb: 2 }}>
+          {strings.last}:
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{ color: 'white', fontFamily: 'monospace', mb: 1.5 }}
+        >
+          {strings.latitude}: {shipDetails.lat}
+        </Typography>
+        <Typography variant="body2" sx={{ color: 'white', fontFamily: 'monospace' }}>
+          {strings.longitude}: {shipDetails.lng}
+        </Typography>
+      </Box>
 
-      {/* Details */}
-      <List sx={{ p: 0, flexGrow: 1 }}>
-        <ListItem disablePadding sx={{ mb: 2 }}>
-          <ListItemText
-            primary={shipTypeLabel}
-            secondary={lang === 'es' ? 'Tipo de embarcación' : 'Vessel type'}
-          />
-        </ListItem>
-
-        {/* Coordinates */}
-        <ListItem disablePadding sx={{ mb: 1, alignItems: 'flex-start' }}>
-          <ListItemText
-            primary={
-              <Box
-                component="span"
-                sx={{ display: 'block', fontFamily: 'monospace', fontSize: '0.9rem' }}
-              >
-                Lat: {shipMockData.lat.toFixed(4)}
-                <br />
-                Lng: {shipMockData.lng.toFixed(4)}
-              </Box>
-            }
-            secondary={strings.last + ' 📍'}
-          />
-        </ListItem>
-      </List>
-
-      {/* Botón de acción en la parte inferior */}
-      <Box sx={{ mt: 'auto', pt: 2 }}>
+      {/* Action button */}
+      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <Button
           variant="contained"
-          color="primary"
-          fullWidth
           startIcon={<RouteIcon />}
           onClick={handleDisplayRoute}
-          sx={{ fontWeight: 'bold', textTransform: 'none', borderRadius: 2 }}
+          sx={{
+            backgroundColor: CARD_COLOR,
+            '&:hover': { backgroundColor: '#0f172a' },
+            fontWeight: 'bold',
+            textTransform: 'none',
+            borderRadius: '16px',
+            width: '70%',
+            py: 1,
+          }}
         >
-          {lang === 'es' ? 'Mostrar ruta' : 'Display route'}
+          {strings.displayRoute}
         </Button>
       </Box>
     </Box>

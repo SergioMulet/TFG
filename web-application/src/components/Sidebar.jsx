@@ -17,10 +17,16 @@ import {
 import FilterSidebar from './FilterSidebar';
 import DetailsSidebar from './DetailsSidebar';
 
-export default function Sidebar({ selectedShipId, onBackToFilters }) {
+export default function Sidebar({ selectedShipId, onBackToFilters, onDisplayRoute }) {
   if (selectedShipId === null) {
     return <FilterSidebar />;
   }
 
-  return <DetailsSidebar shipId={selectedShipId} onBack={onBackToFilters} />;
+  return (
+    <DetailsSidebar
+      shipId={selectedShipId}
+      onBack={onBackToFilters}
+      onDisplayRoute={onDisplayRoute}
+    />
+  );
 }

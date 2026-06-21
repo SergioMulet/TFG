@@ -4,19 +4,18 @@ import {
   List,
   ListItem,
   ListItemButton,
-  ListItemIcon,
+  Box,
   ListItemText,
   IconButton,
-  Box,
   Divider,
   Checkbox,
   Tooltip,
   Link,
+  ListItemIcon,
 } from '@mui/material';
 
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import ShipShapeIcon from './ShipShapeIcon';
 import useLanguage from '../internationalization/LanguageContext';
 import translations from '../internationalization/i18n';
@@ -37,6 +36,8 @@ export default function FilterSidebar() {
     boat: { color: '#263f60' },
     other: { color: '#a6a6a6' },
   };
+
+  const CARD_COLOR = '#1e293b';
 
   const SHIP_KEYS = Object.keys(SHIP_CONFIG);
 
@@ -68,8 +69,9 @@ export default function FilterSidebar() {
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        minWidth: expanded ? 240 : 50,
+        minWidth: expanded ? 300 : 50,
         backgroundColor: '#b8ebff',
+        p: 2,
       }}
     >
       {/* Filter */}
@@ -77,22 +79,18 @@ export default function FilterSidebar() {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: expanded ? 'space-between' : 'center',
+          justifyContent: expanded ? 'flex-start' : 'center',
+          gap: 1,
           mb: 2,
         }}
       >
-        {expanded && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <FilterAltIcon color="action" />
-            <Typography variant="h2" sx={{ fontWeight: 'medium' }}>
-              {strings.filters}
-            </Typography>
-          </Box>
-        )}
-        <IconButton onClick={() => setExpanded(!expanded)}>
+        <IconButton onClick={() => setExpanded(!expanded)} size="small" edge={expanded ? 'start' : false}>
           {expanded ? <ChevronLeftIcon /> : <MenuIcon />}
         </IconButton>
+        {expanded && <Typography variant="h2">{strings.filters}</Typography>}
       </Box>
+
+      <Divider sx={{ mb: 3, borderColor: CARD_COLOR }} />
 
       <List sx={{ p: 0 }}>
         {/* All */}

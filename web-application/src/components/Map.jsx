@@ -1,10 +1,13 @@
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import React, { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import { Box } from '@mui/material';
 import L from 'leaflet';
+import 'leaflet-polylinedecorator';
 
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+import { createLeafletShipIcon } from './ShipShapeIcon';
 
 let DefaultIcon = L.icon({
   iconUrl: icon,
@@ -15,35 +18,56 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-export default function Map({ selectedShipId, onSelectShip }) {
-  const defaultPosition = [41.3851, 2.1734];
+const routePointIcon = L.divIcon({
+  html: '<div style="font-size: 18px; line-height: 1;">🚢</div>',
+  className: 'route-point-marker',
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
+});
 
-  const mockShips = [
-    {
-      id: '001',
-      name: 'Boat Alpha',
-      type: 'cargo',
-      pos: [41.3851, 2.1734],
-      speed: '12.4 knots',
-    },
-    {
-      id: '002',
-      name: 'Boat Beta',
-      type: 'sailing',
-      pos: [41.365, 2.195],
-      speed: '0.0 knots (Offline)',
-    },
-  ];
+function RouteDirectionArrows({ positions }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (positions.length < 2) return;
+
+    const decorator = L.polylineDecorator(positions, {
+      patterns: [
+        {
+          offset: 25,
+          repeat: 80,
+          symbol: L.Symbol.arrowHead({
+            pixelSize: 10,
+            polygon: false,
+            pathOptions: { color: '#ef4444', weight: 2 },
+          }),
+        },
+      ],
+    }).addTo(map);
+
+    return () => decorator.remove();
+  }, [map, positions]);
+
+  return null;
+}
+
+export default function Map({ selectedShipId, onSelectShip, ships, route }) {
+  const defaultPosition = [40.59, -3.91];
+
+  const realShips = ships || [];
 
   const visibleShips = selectedShipId
-    ? mockShips.filter((ship) => ship.id === selectedShipId)
-    : mockShips;
+    ? realShips.filter((ship) => ship.id === selectedShipId)
+    : realShips;
+
+  const routePoints = (route || []).map((coord) => [coord.lat, coord.lng]);
+  const isShowingRoute = routePoints.length > 0;
 
   return (
     <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
       <MapContainer
         center={defaultPosition}
-        zoom={12}
+        zoom={4}
         minZoom={2}
         style={{ width: '100%', height: '100%' }}
       >
@@ -52,11 +76,27 @@ export default function Map({ selectedShipId, onSelectShip }) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
+        {/* Route */}
+        {routePoints.length > 1 && (
+          <>
+            <Polyline
+              positions={routePoints}
+              pathOptions={{ color: '#ef4444', weight: 2, dashArray: '6, 8' }}
+            />
+            <RouteDirectionArrows positions={routePoints} />
+          </>
+        )}
+
+        {routePoints.map((position, index) => (
+          <Marker key={`route-point-${index}`} position={position} icon={routePointIcon} />
+        ))}
+
         {/* Markers */}
-        {visibleShips.map((ship) => (
+        {!isShowingRoute && visibleShips.map((ship) => (
           <Marker
             key={ship.id}
-            position={ship.pos}
+            position={[ship.lat, ship.lng]}
+            icon={createLeafletShipIcon('#0284c7')}
             eventHandlers={{
               click: () => {
                 onSelectShip(ship.id);
@@ -64,9 +104,11 @@ export default function Map({ selectedShipId, onSelectShip }) {
             }}
           >
             <Popup>
-              <strong>{ship.name}</strong>
+              <strong>{ship.id}</strong>
               <br />
-              Speed: {ship.speed}
+              Lat: {ship.lat.toFixed(4)}
+              <br />
+              Lng: {ship.lng.toFixed(4)}
             </Popup>
           </Marker>
         ))}

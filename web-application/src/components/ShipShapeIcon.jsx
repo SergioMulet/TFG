@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { renderToString } from 'react-dom/server';
 
 export default function ShipShapeIcon({ color }) {
   return (
@@ -17,4 +18,14 @@ export default function ShipShapeIcon({ color }) {
 
 ShipShapeIcon.propTypes = {
   color: PropTypes.string,
+};
+
+// Leaflet version
+export const createLeafletShipIcon = (color = '#0284c7') => {
+  return L.divIcon({
+    html: renderToString(<ShipShapeIcon color={color} />),
+    className: 'custom-ship-marker',
+    iconSize: [24, 16],
+    iconAnchor: [12, 8],
+  });
 };
