@@ -19,7 +19,7 @@ export class SendingState implements TrackerState {
       owner_email: userEmail,
       longitude: location.coords.longitude,
       latitude: location.coords.latitude,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(location.timestamp).toISOString(),
     };
 
     let uniqueBoatKey = `${boatName}-${userEmail}`;

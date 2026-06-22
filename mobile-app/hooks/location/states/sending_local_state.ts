@@ -11,7 +11,7 @@ export class SendingLocalState implements TrackerState {
       userEmail,
       location.coords.longitude,
       location.coords.latitude,
-      new Date().toISOString(),
+      new Date(location.timestamp).toISOString(),
     );
   }
 
