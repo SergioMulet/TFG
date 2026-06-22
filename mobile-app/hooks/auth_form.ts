@@ -103,6 +103,9 @@ export function useAuthForm() {
         const browserResult = await WebBrowser.openAuthSessionAsync(
           result.url,
           redirectUrl,
+          // Force Chrome on Android: some OEM browsers (e.g. Samsung Internet)
+          // mishandle the Google sign-in flow and fire a stray mailto: intent to Gmail.
+          Platform.OS === 'android' ? { browserPackage: 'com.android.chrome' } : undefined,
         );
 
         if (browserResult.type === 'success' && browserResult.url) {

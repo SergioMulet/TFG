@@ -6,6 +6,7 @@ import { SendingLocalState } from './states/sending_local_state';
 import { SendingState } from './states/sending_state';
 
 const TRACKING_INTERVAL_MS = 10000;
+const TRACKING_DISTANCE_INTERVAL_M = 0;
 export const BACKGROUND_LOCATION_TASK_NAME = 'background-location-task';
 
 export interface TrackerUpdate {
@@ -62,7 +63,9 @@ export class LocationTracker {
     this.onUpdate?.({ location });
   }
 
-  public async processBackgroundLocations(locations: Location.LocationObject[]): Promise<void> {
+  public async processBackgroundLocations(
+    locations: Location.LocationObject[],
+  ): Promise<void> {
     for (const location of locations) {
       await this.handleLocation(location);
     }
@@ -88,7 +91,8 @@ export class LocationTracker {
       throw new Error('Location permission not granted');
     }
 
-    const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
+    const { status: backgroundStatus } =
+      await Location.requestBackgroundPermissionsAsync();
     if (backgroundStatus !== 'granted') {
       console.warn(
         'Background location permission not granted, tracking will pause while the app is backgrounded',
@@ -105,7 +109,7 @@ export class LocationTracker {
     await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK_NAME, {
       accuracy: Location.Accuracy.BestForNavigation,
       timeInterval: TRACKING_INTERVAL_MS,
-      distanceInterval: 0,
+      distanceInterval: TRACKING_DISTANCE_INTERVAL_M,
       showsBackgroundLocationIndicator: true,
       foregroundService: {
         notificationTitle: 'Seguimiento de ubicación activo',

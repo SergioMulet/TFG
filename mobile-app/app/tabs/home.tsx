@@ -11,10 +11,11 @@ import globalStyles, { COLORS } from '../styles';
 import useLanguage from '../../internazionalization/language-context';
 import translations from '../../internazionalization/i18n';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dropdown } from 'react-native-element-dropdown';
 import LanguageSelector from '@/components/languageSelector';
 import { useLocationTracker } from '@/hooks/location/use_location_tracker';
+import { supabase } from '@/supabaseClient';
 
 export default function DashboardScreen() {
   const { width } = useWindowDimensions();
@@ -27,7 +28,14 @@ export default function DashboardScreen() {
   const coordinatesType = gpsActive ? 'current' : location ? 'last' : null;
 
   const [boatName, setBoatName] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const styles = globalStyles(isPhone);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserEmail(session?.user?.email ?? null);
+    });
+  }, []);
 
   const SHIP_TYPES = [
     { label: strings.cargo, value: 'cargo' },
@@ -100,9 +108,13 @@ export default function DashboardScreen() {
           <Switch
             trackColor={{ false: '#D1D5DB', true: '#00e0b7' }}
             thumbColor={COLORS.background}
-            onValueChange={(value) =>
-              toggleGPS(value, boatName || 'Barco_Prueba', 'sergiokma15@gmail.com')
-            }
+            onValueChange={(value) => {
+              if (!userEmail) {
+                console.warn('No authenticated user email available, cannot toggle GPS');
+                return;
+              }
+              toggleGPS(value, boatName || 'Barco_Prueba', userEmail);
+            }}
             value={gpsActive}
           />
         </View>

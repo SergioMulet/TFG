@@ -9,6 +9,9 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK_NAME, async ({ data, error }) =>
   }
 
   const { locations } = (data ?? {}) as { locations: LocationObject[] };
+  console.log(
+    `[BackgroundLocation] task fired at ${new Date().toISOString()} with ${locations?.length ?? 0} location(s)`,
+  );
   if (locations?.length) {
     await locationTracker.processBackgroundLocations(locations);
   }

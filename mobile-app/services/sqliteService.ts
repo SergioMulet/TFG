@@ -32,7 +32,7 @@ class SqliteService {
     lat: number,
     timestamp: string,
   ) {
-    if (!this.db) this.initDB();
+    if (!this.db) await this.initDB();
     try {
       await this.db?.runAsync(
         `INSERT INTO offline_telemetry (boat_name, owner_email, longitude, latitude, timestamp) VALUES (?, ?, ?, ?, ?);`,
@@ -45,7 +45,7 @@ class SqliteService {
   }
 
   async getAllCoordinates() {
-    if (!this.db) this.initDB();
+    if (!this.db) await this.initDB();
     try {
       let allRows = await this.db?.getAllAsync<{
         id: number;
