@@ -58,15 +58,33 @@ class MqttService {
     }
   }
 
-  // Send telemtry JSON
-  public publish(topic: string, message: string): boolean {
-    if (this.client && this.client.connected) {
-      this.client.publish(topic, message, { qos: 1 });
-      return true;
-    } else {
+  // Send telemtry JSON. Resolves only once the broker acknowledges the
+  // message (QoS 1 PUBACK), since `client.connected` can stay true for a
+  // while after the broker has actually dropped the connection (e.g. while
+  // backgrounded and unable to send keepalive pings).
+  public publish(topic: string, message: string, ackTimeoutMs = 5000): Promise<boolean> {
+    if (!this.client || !this.client.connected) {
       console.warn('Trying to publish but MQTT is offline.');
-      return false;
+      return Promise.resolve(false);
     }
+
+    const client = this.client;
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        console.warn('--- [MQTT] Publish not acknowledged in time, treating as failed ---');
+        resolve(false);
+      }, ackTimeoutMs);
+
+      client.publish(topic, message, { qos: 1 }, (error) => {
+        clearTimeout(timeout);
+        if (error) {
+          console.error('--- [MQTT] Publish failed ---', error);
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      });
+    });
   }
 
   public getClient() {

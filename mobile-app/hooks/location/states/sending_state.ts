@@ -28,7 +28,7 @@ export class SendingState implements TrackerState {
 
   async publishCoordinates(context: any): Promise<void> {
     if (this.telemetryPayload) {
-      let success = mqttService.publish(
+      let success = await mqttService.publish(
         this.topic,
         JSON.stringify(this.telemetryPayload),
       );

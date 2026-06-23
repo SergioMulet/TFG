@@ -1,10 +1,10 @@
-import React from "react";
-import { Tabs } from "expo-router";
-import Fontisto from "@expo/vector-icons/Fontisto";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { COLORS } from "./../styles";
-import useLanguage from "@/internazionalization/language-context";
-import translations from "@/internazionalization/i18n";
+import React from 'react';
+import { Tabs } from 'expo-router';
+import Fontisto from '@expo/vector-icons/Fontisto';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { COLORS } from './../styles';
+import useLanguage from '@/internazionalization/languageContext';
+import translations from '@/internazionalization/i18n';
 
 export default function TabsLayout() {
   let { lang } = useLanguage();

@@ -8,12 +8,12 @@ import {
 } from 'react-native';
 
 import globalStyles, { COLORS } from '../styles';
-import useLanguage from '../../internazionalization/language-context';
+import useLanguage from '../../internazionalization/languageContext';
 import translations from '../../internazionalization/i18n';
 
 import { useEffect, useState } from 'react';
 import { Dropdown } from 'react-native-element-dropdown';
-import LanguageSelector from '@/components/languageSelector';
+import LanguageSelector from '@/components/LanguageSelector';
 import { useLocationTracker } from '@/hooks/location/use_location_tracker';
 import { supabase } from '@/supabaseClient';
 

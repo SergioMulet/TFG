@@ -2,7 +2,7 @@ import { LocationObject } from 'expo-location';
 
 import { TrackerState } from '../tracker_state';
 import { sqliteService } from '@/services/sqliteService';
-import { authContextManager } from '@/services/auth/auth.context';
+import { authContextManager } from '@/services/auth/authContext';
 
 export class SendingLocalState implements TrackerState {
   saveCoordinates(location: LocationObject, boatName: string, userEmail: string): void {

@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { Alert, Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { supabase } from '../supabaseClient';
-import { authContextManager } from '@/services/auth/auth.context';
-import { EmailStrategy } from '@/services/auth/strategies/email_auth';
-import { GoogleStrategy } from '@/services/auth/strategies/google_auth';
+import { authContextManager } from '@/services/auth/authContext';
+import { EmailStrategy } from '@/services/auth/strategies/emailAuthStrategy';
+import { GoogleStrategy } from '@/services/auth/strategies/googleAuthStrategy';
 
 export function useAuthForm() {
   const [email, setEmail] = useState('');
@@ -105,7 +105,9 @@ export function useAuthForm() {
           redirectUrl,
           // Force Chrome on Android: some OEM browsers (e.g. Samsung Internet)
           // mishandle the Google sign-in flow and fire a stray mailto: intent to Gmail.
-          Platform.OS === 'android' ? { browserPackage: 'com.android.chrome' } : undefined,
+          Platform.OS === 'android'
+            ? { browserPackage: 'com.android.chrome' }
+            : undefined,
         );
 
         if (browserResult.type === 'success' && browserResult.url) {
