@@ -5,7 +5,9 @@ class MainServerService {
     if (!userEmail) return null;
 
     try {
-      const response = await fetch(`${API_URL}/ships/${encodeURIComponent(userEmail)}`);
+      const response = await fetch(
+        `${API_URL}/ships/owner/${encodeURIComponent(userEmail)}`,
+      );
       if (!response.ok) return null;
 
       const data = await response.json();
