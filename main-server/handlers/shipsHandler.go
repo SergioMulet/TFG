@@ -143,6 +143,51 @@ func BroadcastShips() {
 	ws.Hub.Broadcast(data)
 }
 
+type ShipRegistration struct {
+	Registered bool `json:"registered"`
+}
+
+// IsShipRegistered reports whether any telemetry has ever been recorded for
+// the given (boat_name, owner_email) pair. The mobile app calls this before
+// turning location sending on for the first time: if the pair is unknown,
+// the app must first prove ownership of the boat before any coordinates are
+// accepted.
+//
+// NOTE: ownership verification itself (e.g. validating a registration
+// document) is out of scope for this project and is currently simulated on
+// the client. This endpoint only answers "have we seen this boat+owner
+// before", it does not perform any ownership check itself.
+func IsShipRegistered(c *gin.Context) {
+	boatName := c.Query("boat_name")
+	ownerEmail := c.Query("owner_email")
+	if boatName == "" || ownerEmail == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "boat_name and owner_email are required"})
+		return
+	}
+
+	org := os.Getenv("INFLUX_ORG")
+	bucket := os.Getenv("INFLUX_BUCKET")
+	queryAPI := repositories.Infra.Influx.QueryAPI(org)
+
+	fluxQuery := fmt.Sprintf(`
+		from(bucket: "%s")
+			|> range(start: -100y)
+			|> filter(fn: (r) => r["_measurement"] == "boat_telemetry")
+			|> filter(fn: (r) => r["boat_name"] == "%s")
+			|> filter(fn: (r) => r["owner_email"] == "%s")
+			|> limit(n: 1)
+	`, bucket, boatName, ownerEmail)
+
+	result, err := queryAPI.Query(context.Background(), fluxQuery)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer result.Close()
+
+	c.JSON(http.StatusOK, ShipRegistration{Registered: result.Next()})
+}
+
 func GetShipDetails(c *gin.Context) {
 	boatID := c.Param("id") // currently is the boat_name
 	org := os.Getenv("INFLUX_ORG")
