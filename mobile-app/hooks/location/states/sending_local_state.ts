@@ -5,10 +5,11 @@ import { sqliteService } from '@/services/sqliteService';
 import { authContextManager } from '@/services/auth/authContext';
 
 export class SendingLocalState implements TrackerState {
-  saveCoordinates(location: LocationObject, boatName: string, userEmail: string): void {
+  saveCoordinates(location: LocationObject, boatName: string, userEmail: string, shipType: string): void {
     sqliteService.saveCoordinate(
       boatName,
       userEmail,
+      shipType,
       location.coords.longitude,
       location.coords.latitude,
       new Date(location.timestamp).toISOString(),

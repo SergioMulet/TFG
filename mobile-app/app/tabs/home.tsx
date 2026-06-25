@@ -121,7 +121,7 @@ export default function DashboardScreen() {
                 console.warn('No authenticated user email available, cannot toggle GPS');
                 return;
               }
-              toggleGPS(value, shipName || 'Barco_Prueba', userEmail);
+              toggleGPS(value, shipName || 'Barco_Prueba', userEmail, selectedType || 'other');
             }}
             value={gpsActive}
           />

@@ -8,15 +8,17 @@ export class SendingState implements TrackerState {
   private telemetryPayload: {
     boat_name: string;
     owner_email: string;
+    ship_type: string;
     longitude: number;
     latitude: number;
     timestamp: string;
   } | null = null;
 
-  saveCoordinates(location: LocationObject, boatName: string, userEmail: string): void {
+  saveCoordinates(location: LocationObject, boatName: string, userEmail: string, shipType: string): void {
     this.telemetryPayload = {
       boat_name: boatName,
       owner_email: userEmail,
+      ship_type: shipType,
       longitude: location.coords.longitude,
       latitude: location.coords.latitude,
       timestamp: new Date(location.timestamp).toISOString(),
@@ -39,6 +41,7 @@ export class SendingState implements TrackerState {
         await sqliteService.saveCoordinate(
           this.telemetryPayload.boat_name,
           this.telemetryPayload.owner_email,
+          this.telemetryPayload.ship_type,
           this.telemetryPayload.longitude,
           this.telemetryPayload.latitude,
           this.telemetryPayload.timestamp,
