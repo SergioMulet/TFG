@@ -67,15 +67,15 @@ function RootLayoutNav() {
     if (authLoading) return;
 
     const inTabsGroup = segments[0] === 'tabs';
-    const inLoginScreen = segments[0] === 'login';
+    const inLoginScreen = segments[0] === 'Login';
 
     const timer = setTimeout(() => {
       if (!session && inTabsGroup) {
-        router.replace('/login');
+        router.replace('/Login');
       } else if (session && !inTabsGroup) {
-        router.replace('/tabs/home');
+        router.replace('/tabs/Home');
       } else if (!session && !inTabsGroup && !inLoginScreen) {
-        router.replace('/login');
+        router.replace('/Login');
       }
     }, 100);
 
