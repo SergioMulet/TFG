@@ -1,12 +1,54 @@
 name: "CodeQL Analysis"
 
 on:
+  push:
+    branches: ["main"]
   pull_request:
     branches: ["main"]
 
 jobs:
+  detect-changes:
+    name: Detect changed languages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      languages: ${{ steps.set.outputs.languages }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            go:
+              - 'main-server/**'
+            js:
+              - 'mobile-app/**'
+              - 'web-application/**'
+
+      - name: Build language list
+        id: set
+        shell: bash
+        run: |
+          languages='[]'
+          if [ "${{ steps.filter.outputs.go }}" == "true" ]; then
+            languages=$(echo "$languages" | jq -c '. + ["go"]')
+          fi
+          if [ "${{ steps.filter.outputs.js }}" == "true" ]; then
+            languages=$(echo "$languages" | jq -c '. + ["javascript-typescript"]')
+          fi
+          echo "languages=$languages" >> "$GITHUB_OUTPUT"
+
   analyze:
     name: Analyze Code
+    needs: detect-changes
+    if: needs.detect-changes.outputs.languages != '[]'
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -16,15 +58,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - branch: "main_server"
-            language: "go"
-          - branch: "mobile_application"
-            language: "javascript-typescript"
-          - branch: "web_application"
-            language: "javascript-typescript"
-
-    if: github.head_ref == matrix.branch
+        language: ${{ fromJSON(needs.detect-changes.outputs.languages) }}
 
     steps:
       - name: Checkout repository
