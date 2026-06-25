@@ -36,7 +36,7 @@ func StartSubscriber() {
 
 		p := influxdb2.NewPoint(
 			"boat_telemetry",
-			map[string]string{"boat_name": payload.BoatName, "owner_email": payload.OwnerEmail},
+			map[string]string{"boat_name": payload.BoatName, "owner_email": payload.OwnerEmail, "ship_type": payload.ShipType},
 			map[string]interface{}{"latitude": payload.Latitude, "longitude": payload.Longitude},
 			payload.Timestamp,
 		)
