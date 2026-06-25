@@ -15,6 +15,21 @@ class MainServerService {
       return null;
     }
   }
+
+  // Used to detect a new boat - owner combination
+  async isShipRegistered(boatName: string, userEmail: string): Promise<boolean> {
+    try {
+      const params = new URLSearchParams({ boat_name: boatName, owner_email: userEmail });
+      const response = await fetch(`${API_URL}/ships/registered?${params.toString()}`);
+      if (!response.ok) return false;
+
+      const data = await response.json();
+      return Boolean(data.registered);
+    } catch (error) {
+      console.error('Error checking ship registration: ', error);
+      return false;
+    }
+  }
 }
 
 export const mainServerService = new MainServerService();

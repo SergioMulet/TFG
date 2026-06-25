@@ -14,6 +14,7 @@ import translations from '../../internazionalization/i18n';
 
 import { useEffect, useState } from 'react';
 import LanguageSelector from '@/components/languageSelector';
+import OwnershipVerificationModal from '@/components/ownershipVerificationModal';
 import { useLocationTracker } from '@/hooks/location/use_location_tracker';
 import { supabase } from '@/supabaseClient';
 import { mainServerService } from '@/services/mainServerService';
@@ -58,6 +59,12 @@ export default function DashboardScreen() {
   ];
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [isFocus, setIsFocus] = useState(false);
+  const [showOwnershipModal, setShowOwnershipModal] = useState(false);
+
+  const enableTracking = () => {
+    if (!userEmail) return;
+    toggleGPS(true, shipName || 'Barco_Prueba', userEmail, selectedType || 'other');
+  };
 
   return (
     <ScrollView style={styles.scrollContainer}>
@@ -121,12 +128,41 @@ export default function DashboardScreen() {
                 console.warn('No authenticated user email available, cannot toggle GPS');
                 return;
               }
-              toggleGPS(value, shipName || 'Barco_Prueba', userEmail, selectedType || 'other');
+
+              if (!value) {
+                toggleGPS(
+                  false,
+                  shipName || 'Barco_Prueba',
+                  userEmail,
+                  selectedType || 'other',
+                );
+                return;
+              }
+
+              mainServerService
+                .isShipRegistered(shipName || 'Barco_Prueba', userEmail)
+                .then((registered) => {
+                  if (registered) {
+                    enableTracking();
+                  } else {
+                    setShowOwnershipModal(true);
+                  }
+                });
             }}
             value={gpsActive}
           />
         </View>
       </View>
+
+      <OwnershipVerificationModal
+        visible={showOwnershipModal}
+        boatName={shipName || 'Barco_Prueba'}
+        onCancel={() => setShowOwnershipModal(false)}
+        onVerified={() => {
+          setShowOwnershipModal(false);
+          enableTracking();
+        }}
+      />
     </ScrollView>
   );
 }
