@@ -167,6 +167,7 @@ func GetShipDetails(c *gin.Context) {
 
 	var route []Coordinates
 	var lastLat, lastLng float64
+	shipType := "other"
 
 	for result.Next() {
 		record := result.Record()
@@ -178,12 +179,15 @@ func GetShipDetails(c *gin.Context) {
 
 		lastLat = lat
 		lastLng = lng
+		if t, ok := record.ValueByKey("ship_type").(string); ok && t != "" {
+			shipType = t
+		}
 	}
 
 	details := ShipDetails{
 		ID:      boatID,
 		Name:    boatID,
-		Type:    "cargo", // Rightnow im not saving the type TODO
+		Type:    shipType,
 		Lat:     lastLat,
 		Lng:     lastLng,
 		Route24: route,
