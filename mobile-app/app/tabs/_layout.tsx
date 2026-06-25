@@ -1,10 +1,10 @@
-import React from "react";
-import { Tabs } from "expo-router";
-import Fontisto from "@expo/vector-icons/Fontisto";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { COLORS } from "./../styles";
-import useLanguage from "@/internazionalization/language-context";
-import translations from "@/internazionalization/i18n";
+import React from 'react';
+import { Tabs } from 'expo-router';
+import Fontisto from '@expo/vector-icons/Fontisto';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { COLORS } from './../styles';
+import useLanguage from '@/internazionalization/languageContext';
+import translations from '@/internazionalization/i18n';
 
 export default function TabsLayout() {
   let { lang } = useLanguage();
@@ -23,7 +23,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="home"
+        name="Home"
         options={{
           title: strings.boatTab,
           tabBarIcon: ({ color, size }) => (
@@ -32,7 +32,7 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="Settings"
         options={{
           title: strings.settingsTab,
           tabBarIcon: ({ color, size }) => (

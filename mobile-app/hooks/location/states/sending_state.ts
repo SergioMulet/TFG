@@ -19,7 +19,7 @@ export class SendingState implements TrackerState {
       owner_email: userEmail,
       longitude: location.coords.longitude,
       latitude: location.coords.latitude,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(location.timestamp).toISOString(),
     };
 
     let uniqueBoatKey = `${boatName}-${userEmail}`;
@@ -28,7 +28,7 @@ export class SendingState implements TrackerState {
 
   async publishCoordinates(context: any): Promise<void> {
     if (this.telemetryPayload) {
-      let success = mqttService.publish(
+      let success = await mqttService.publish(
         this.topic,
         JSON.stringify(this.telemetryPayload),
       );

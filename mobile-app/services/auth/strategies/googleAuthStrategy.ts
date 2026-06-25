@@ -1,20 +1,23 @@
-
 import { Platform } from "react-native";
+import * as Linking from "expo-linking";
 import { supabase } from "../../../supabaseClient";
 import { AuthStrategy, AuthResponse } from "../type";
 
 export class GoogleStrategy implements AuthStrategy {
-  private getRedirectUrl(): string {
-    return Platform.OS === "web" ? "http://localhost:8081" : "exp://192.168.1.135:8081";
+  static getRedirectUrl(): string {
+    return Platform.OS === "web" ? "http://localhost:8081" : Linking.createURL("home");
   }
 
   async authenticate(): Promise<AuthResponse> {
-    const redirectUrl = this.getRedirectUrl();
+    const redirectUrl = GoogleStrategy.getRedirectUrl();
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: redirectUrl,
         skipBrowserRedirect: false,
+        queryParams: {
+          prompt: "select_account",
+        },
       },
     });
 

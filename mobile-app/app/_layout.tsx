@@ -1,26 +1,23 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import { useFonts } from "expo-font";
-import { Slot, useRouter, useSegments } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
-import "react-native-reanimated";
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useFonts } from 'expo-font';
+import { Slot, useRouter, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect, useState } from 'react';
+import 'react-native-reanimated';
 
-import { useColorScheme } from "@/components/useColorScheme";
-import { LanguageProvider } from "../internazionalization/language-context";
-import { supabase } from "../supabaseClient";
+import { useColorScheme } from '@/components/useColorScheme';
+import '@/hooks/location/background_location_task';
+import { LanguageProvider } from '../internazionalization/languageContext';
+import { supabase } from '../supabaseClient';
 
-export { ErrorBoundary } from "expo-router";
+export { ErrorBoundary } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
   });
 
@@ -69,18 +66,16 @@ function RootLayoutNav() {
   useEffect(() => {
     if (authLoading) return;
 
-    const inTabsGroup = segments[0] === "tabs";
-    const inLoginScreen = segments[0] === "login";
+    const inTabsGroup = segments[0] === 'tabs';
+    const inLoginScreen = segments[0] === 'Login';
 
     const timer = setTimeout(() => {
       if (!session && inTabsGroup) {
-        router.replace("/login");
-      } 
-      else if (session && !inTabsGroup) {
-        router.replace("/tabs/home");
-      } 
-      else if (!session && !inTabsGroup && !inLoginScreen) {
-        router.replace("/login");
+        router.replace('/Login');
+      } else if (session && !inTabsGroup) {
+        router.replace('/tabs/Home');
+      } else if (!session && !inTabsGroup && !inLoginScreen) {
+        router.replace('/Login');
       }
     }, 100);
 
@@ -89,7 +84,7 @@ function RootLayoutNav() {
 
   return (
     <LanguageProvider>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Slot />
       </ThemeProvider>
     </LanguageProvider>

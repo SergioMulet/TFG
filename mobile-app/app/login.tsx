@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Text,
   View,
@@ -7,14 +7,14 @@ import {
   ActivityIndicator,
   ScrollView,
   useWindowDimensions,
-} from "react-native";
-import * as WebBrowser from "expo-web-browser";
-import { SvgUri } from "react-native-svg";
-import globalStyles, { COLORS } from "./styles";
-import useLanguage from "../internazionalization/language-context";
-import translations from "../internazionalization/i18n";
-import { useAuthForm } from "@/hooks/auth_form";
-import LanguageSelector from "@/components/languageSelector";
+} from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
+import { SvgUri } from 'react-native-svg';
+import globalStyles, { COLORS } from './styles';
+import useLanguage from '../internazionalization/languageContext';
+import translations from '../internazionalization/i18n';
+import { useAuthForm } from '@/hooks/auth_form';
+import LanguageSelector from '@/components/LanguageSelector';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -47,7 +47,7 @@ export default function LoginScreen() {
         <Text style={styles.title}>
           {isRegistering ? strings.createAccount : strings.login}
         </Text>
-        <Text style={[styles.text, { marginTop: "1%" }]}>
+        <Text style={[styles.text, { marginTop: '1%' }]}>
           {isRegistering ? strings.registerTo : strings.loginTo}
         </Text>
 
@@ -81,7 +81,7 @@ export default function LoginScreen() {
         {/* email and password*/}
         <View style={styles.loginCards}>
           <TextInput
-            style={[styles.text, { textAlign: "center" }]}
+            style={[styles.text, { textAlign: 'center' }]}
             placeholder={strings.email}
             placeholderTextColor={COLORS.placeholder}
             value={email}
@@ -94,7 +94,7 @@ export default function LoginScreen() {
 
         <View style={styles.loginCards}>
           <TextInput
-            style={[styles.text, { textAlign: "center" }]}
+            style={[styles.text, { textAlign: 'center' }]}
             placeholder={strings.password}
             placeholderTextColor={COLORS.placeholder}
             value={password}
@@ -114,12 +114,7 @@ export default function LoginScreen() {
           {loading ? (
             <ActivityIndicator color={COLORS.background} />
           ) : (
-            <Text
-              style={[
-                styles.text,
-                { color: COLORS.background, fontWeight: "bold" },
-              ]}
-            >
+            <Text style={[styles.text, { color: COLORS.background, fontWeight: 'bold' }]}>
               {isRegistering ? strings.register : strings.login}
             </Text>
           )}
