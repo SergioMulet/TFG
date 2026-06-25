@@ -22,6 +22,7 @@ export class LocationTracker {
 
   private boatName = '';
   private userEmail = '';
+  private shipType = '';
   private onUpdate: ((update: TrackerUpdate) => void) | null = null;
 
   private async connectMqtt(): Promise<boolean> {
@@ -57,7 +58,7 @@ export class LocationTracker {
       await this.tryReconnectAndSync();
     }
 
-    this.trackerState.saveCoordinates(location, this.boatName, this.userEmail);
+    this.trackerState.saveCoordinates(location, this.boatName, this.userEmail, this.shipType);
     await this.trackerState.publishCoordinates(this);
 
     this.onUpdate?.({ location });
@@ -84,6 +85,7 @@ export class LocationTracker {
   public async startTracking(
     boatName: string,
     userEmail: string,
+    shipType: string,
     onUpdate: (update: TrackerUpdate) => void,
   ): Promise<void> {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -101,6 +103,7 @@ export class LocationTracker {
 
     this.boatName = boatName;
     this.userEmail = userEmail;
+    this.shipType = shipType;
     this.onUpdate = onUpdate;
 
     const connected = await this.connectMqtt();

@@ -6,16 +6,18 @@ import {
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { Dropdown } from 'react-native-element-dropdown';
 
 import globalStyles, { COLORS } from '../styles';
 import useLanguage from '../../internazionalization/languageContext';
 import translations from '../../internazionalization/i18n';
 
 import { useEffect, useState } from 'react';
-import { Dropdown } from 'react-native-element-dropdown';
-import LanguageSelector from '@/components/LanguageSelector';
+import LanguageSelector from '@/components/languageSelector';
+import OwnershipVerificationModal from '@/components/ownershipVerificationModal';
 import { useLocationTracker } from '@/hooks/location/use_location_tracker';
 import { supabase } from '@/supabaseClient';
+import { mainServerService } from '@/services/mainServerService';
 
 export default function DashboardScreen() {
   const { width } = useWindowDimensions();
@@ -27,7 +29,7 @@ export default function DashboardScreen() {
   const { location, gpsActive, toggleGPS } = useLocationTracker();
   const coordinatesType = gpsActive ? 'current' : location ? 'last' : null;
 
-  const [boatName, setBoatName] = useState<string | null>(null);
+  const [shipName, setShipName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const styles = globalStyles(isPhone);
 
@@ -36,6 +38,13 @@ export default function DashboardScreen() {
       setUserEmail(session?.user?.email ?? null);
     });
   }, []);
+
+  useEffect(() => {
+    if (!userEmail) return;
+    mainServerService.getShipName(userEmail).then((name) => {
+      if (name) setShipName(name);
+    });
+  }, [userEmail]);
 
   const SHIP_TYPES = [
     { label: strings.cargo, value: 'cargo' },
@@ -50,6 +59,12 @@ export default function DashboardScreen() {
   ];
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [isFocus, setIsFocus] = useState(false);
+  const [showOwnershipModal, setShowOwnershipModal] = useState(false);
+
+  const enableTracking = () => {
+    if (!userEmail) return;
+    toggleGPS(true, shipName || 'Barco_Prueba', userEmail, selectedType || 'other');
+  };
 
   return (
     <ScrollView style={styles.scrollContainer}>
@@ -58,8 +73,8 @@ export default function DashboardScreen() {
         <View style={styles.boatCard}>
           <TextInput
             style={styles.title}
-            value={boatName ?? ''}
-            onChangeText={(text) => setBoatName(text)}
+            value={shipName ?? ''}
+            onChangeText={(text) => setShipName(text)}
             placeholder={strings.boatName}
             placeholderTextColor={COLORS.placeholder}
             selectTextOnFocus={true}
@@ -113,12 +128,41 @@ export default function DashboardScreen() {
                 console.warn('No authenticated user email available, cannot toggle GPS');
                 return;
               }
-              toggleGPS(value, boatName || 'Barco_Prueba', userEmail);
+
+              if (!value) {
+                toggleGPS(
+                  false,
+                  shipName || 'Barco_Prueba',
+                  userEmail,
+                  selectedType || 'other',
+                );
+                return;
+              }
+
+              mainServerService
+                .isShipRegistered(shipName || 'Barco_Prueba', userEmail)
+                .then((registered) => {
+                  if (registered) {
+                    enableTracking();
+                  } else {
+                    setShowOwnershipModal(true);
+                  }
+                });
             }}
             value={gpsActive}
           />
         </View>
       </View>
+
+      <OwnershipVerificationModal
+        visible={showOwnershipModal}
+        boatName={shipName || 'Barco_Prueba'}
+        onCancel={() => setShowOwnershipModal(false)}
+        onVerified={() => {
+          setShowOwnershipModal(false);
+          enableTracking();
+        }}
+      />
     </ScrollView>
   );
 }

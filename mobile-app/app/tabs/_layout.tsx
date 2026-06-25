@@ -23,7 +23,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="Home"
+        name="home"
         options={{
           title: strings.boatTab,
           tabBarIcon: ({ color, size }) => (
@@ -32,7 +32,7 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="Settings"
+        name="settings"
         options={{
           title: strings.settingsTab,
           tabBarIcon: ({ color, size }) => (
