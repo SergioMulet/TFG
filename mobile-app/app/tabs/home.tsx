@@ -6,16 +6,17 @@ import {
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
+import { Dropdown } from 'react-native-element-dropdown';
 
 import globalStyles, { COLORS } from '../styles';
 import useLanguage from '../../internazionalization/languageContext';
 import translations from '../../internazionalization/i18n';
 
 import { useEffect, useState } from 'react';
-import { Dropdown } from 'react-native-element-dropdown';
-import LanguageSelector from '@/components/LanguageSelector';
+import LanguageSelector from '@/components/languageSelector';
 import { useLocationTracker } from '@/hooks/location/use_location_tracker';
 import { supabase } from '@/supabaseClient';
+import { mainServerService } from '@/services/mainServerService';
 
 export default function DashboardScreen() {
   const { width } = useWindowDimensions();
@@ -27,7 +28,7 @@ export default function DashboardScreen() {
   const { location, gpsActive, toggleGPS } = useLocationTracker();
   const coordinatesType = gpsActive ? 'current' : location ? 'last' : null;
 
-  const [boatName, setBoatName] = useState<string | null>(null);
+  const [shipName, setShipName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const styles = globalStyles(isPhone);
 
@@ -36,6 +37,13 @@ export default function DashboardScreen() {
       setUserEmail(session?.user?.email ?? null);
     });
   }, []);
+
+  useEffect(() => {
+    if (!userEmail) return;
+    mainServerService.getShipName(userEmail).then((name) => {
+      if (name) setShipName(name);
+    });
+  }, [userEmail]);
 
   const SHIP_TYPES = [
     { label: strings.cargo, value: 'cargo' },
@@ -58,8 +66,8 @@ export default function DashboardScreen() {
         <View style={styles.boatCard}>
           <TextInput
             style={styles.title}
-            value={boatName ?? ''}
-            onChangeText={(text) => setBoatName(text)}
+            value={shipName ?? ''}
+            onChangeText={(text) => setShipName(text)}
             placeholder={strings.boatName}
             placeholderTextColor={COLORS.placeholder}
             selectTextOnFocus={true}
@@ -113,7 +121,7 @@ export default function DashboardScreen() {
                 console.warn('No authenticated user email available, cannot toggle GPS');
                 return;
               }
-              toggleGPS(value, boatName || 'Barco_Prueba', userEmail);
+              toggleGPS(value, shipName || 'Barco_Prueba', userEmail);
             }}
             value={gpsActive}
           />

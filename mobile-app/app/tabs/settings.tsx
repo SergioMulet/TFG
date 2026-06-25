@@ -9,7 +9,7 @@ import {
 import globalStyles from '../styles';
 import useLanguage from '@/internazionalization/languageContext';
 import translations from '@/internazionalization/i18n';
-import LanguageSelector from '@/components/LanguageSelector';
+import LanguageSelector from '@/components/languageSelector';
 import { authContextManager } from '@/services/auth/authContext';
 
 export default function SettingsScreen() {

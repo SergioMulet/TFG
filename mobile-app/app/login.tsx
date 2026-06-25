@@ -14,7 +14,7 @@ import globalStyles, { COLORS } from './styles';
 import useLanguage from '../internazionalization/languageContext';
 import translations from '../internazionalization/i18n';
 import { useAuthForm } from '@/hooks/auth_form';
-import LanguageSelector from '@/components/LanguageSelector';
+import LanguageSelector from '@/components/languageSelector';
 
 WebBrowser.maybeCompleteAuthSession();
 
