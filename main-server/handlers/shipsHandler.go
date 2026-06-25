@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"main_server/repositories"
 	"main_server/ws"
@@ -189,4 +190,41 @@ func GetShipDetails(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, details)
+}
+
+// GetShipNameByOwner returns the most recent boat_name reported by the given
+// owner_email, so the mobile app can prefill the boat name it last used.
+func GetShipNameByOwner(c *gin.Context) {
+	email := c.Param("email")
+	if email == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "email param is required"})
+		return
+	}
+	escapedEmail := strings.ReplaceAll(email, `"`, `\"`)
+
+	org := os.Getenv("INFLUX_ORG")
+	bucket := os.Getenv("INFLUX_BUCKET")
+	queryAPI := repositories.Infra.Influx.QueryAPI(org)
+
+	fluxQuery := fmt.Sprintf(`
+		from(bucket: "%s")
+			|> range(start: -100y) // maybe a user has not log in since a long time
+			|> filter(fn: (r) => r["_measurement"] == "boat_telemetry")
+			|> filter(fn: (r) => r["owner_email"] == "%s")
+			|> filter(fn: (r) => r["_field"] == "latitude")
+			|> last()
+	`, bucket, escapedEmail)
+
+	result, err := queryAPI.Query(context.Background(), fluxQuery)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	var boatName string
+	if result.Next() {
+		boatName, _ = result.Record().ValueByKey("boat_name").(string)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"boat_name": boatName})
 }
