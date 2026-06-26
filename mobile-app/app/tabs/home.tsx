@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import LanguageSelector from '@/components/languageSelector';
 import OwnershipVerificationModal from '@/components/ownershipVerificationModal';
 import { useLocationTracker } from '@/hooks/location/use_location_tracker';
+import { useAutoDismiss } from '@/hooks/use_auto_dismiss';
 import { supabase } from '@/supabaseClient';
 import { mainServerService } from '@/services/mainServerService';
 
@@ -70,22 +71,35 @@ export default function DashboardScreen() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [isFocus, setIsFocus] = useState(false);
   const [showOwnershipModal, setShowOwnershipModal] = useState(false);
+  const [showTypeError, setShowTypeError] = useState(false);
+  const [showShipIdError, setShowShipIdError] = useState(false);
 
   const enableTracking = () => {
     if (!userEmail) return;
     toggleGPS(true, shipId!, userEmail, selectedType!);
   };
 
+  useAutoDismiss(showTypeError, setShowTypeError);
+  useAutoDismiss(showShipIdError, setShowShipIdError);
+
   return (
     <ScrollView style={styles.scrollContainer}>
       <View style={styles.screenContainer}>
         <LanguageSelector></LanguageSelector>
-        <View style={styles.boatCard}>
+        <View
+          style={[
+            styles.boatCard,
+            showShipIdError && { borderColor: COLORS.red, borderWidth: 4 },
+          ]}
+        >
           <TextInput
             style={styles.title}
             value={shipId ?? ''}
-            onChangeText={(text) => setShipId(text)}
-            placeholder={strings.boatName}
+            onChangeText={(text) => {
+              setShipId(text);
+              setShowShipIdError(false);
+            }}
+            placeholder={strings.shipId}
             placeholderTextColor={COLORS.placeholder}
             selectTextOnFocus={true}
           />
@@ -95,6 +109,7 @@ export default function DashboardScreen() {
           style={[
             styles.boatCard,
             isFocus && { borderColor: COLORS.text, borderWidth: 2 },
+            showTypeError && { borderColor: COLORS.red, borderWidth: 4 },
           ]}
           placeholder={strings.chooseType}
           placeholderStyle={styles.text}
@@ -103,7 +118,10 @@ export default function DashboardScreen() {
           selectedTextStyle={styles.text}
           itemTextStyle={styles.text}
           data={SHIP_TYPES}
-          onChange={(item) => setSelectedType(item.value)}
+          onChange={(item) => {
+            setSelectedType(item.value);
+            setShowTypeError(false);
+          }}
           labelField="label"
           valueField="value"
           value={selectedType}
@@ -148,6 +166,17 @@ export default function DashboardScreen() {
                 );
                 return;
               }
+
+              if (!shipId) {
+                setShowShipIdError(true);
+                return;
+              }
+
+              if (!selectedType) {
+                setShowTypeError(true);
+                return;
+              }
+
               mainServerService
                 .isShipRegistered(shipId!, userEmail)
                 .then((registered) => {
