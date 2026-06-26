@@ -40,7 +40,7 @@ export default function LoginScreen() {
     handleAuth,
     showEmailError,
     showPasswordError,
-    authErrorMessage,
+    accountAlreadyExists,
   } = useAuthForm();
 
   return (
@@ -112,9 +112,9 @@ export default function LoginScreen() {
           />
         </View>
 
-        {authErrorMessage != null && (
+        {accountAlreadyExists && (
           <Text style={[styles.text, { color: COLORS.red, textAlign: 'center' }]}>
-            {authErrorMessage}
+            {strings.accountAlreadyExists}
           </Text>
         )}
 

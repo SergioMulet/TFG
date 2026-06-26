@@ -20,18 +20,18 @@ export function useAuthForm() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [showEmailError, setShowEmailError] = useState(false);
   const [showPasswordError, setShowPasswordError] = useState(false);
-  const [authErrorMessage, setAuthErrorMessage] = useState<string | null>(null);
+  const [accountAlreadyExists, setAccountAlreadyExists] = useState(false);
 
   useAutoDismiss(showEmailError, setShowEmailError);
   useAutoDismiss(showPasswordError, setShowPasswordError);
 
   useEffect(() => {
     setShowEmailError(false);
-    setAuthErrorMessage(null);
+    setAccountAlreadyExists(false);
   }, [email]);
   useEffect(() => {
     setShowPasswordError(false);
-    setAuthErrorMessage(null);
+    setAccountAlreadyExists(false);
   }, [password]);
 
   // get token from web, probably not needed since the application is intended to be used in mobile applications
@@ -55,7 +55,7 @@ export function useAuthForm() {
               window.history.replaceState({}, document.title, window.location.pathname);
             } catch (error) {
               console.error(error);
-              Alert.alert('Error', 'No se pudo validar la sesión web.');
+              Alert.alert(strings.error, strings.webSessionError);
             }
           }
         }
@@ -95,16 +95,13 @@ export function useAuthForm() {
         setShowEmailError(true);
         setShowPasswordError(true);
         if (result.accountExists) {
-          setAuthErrorMessage(strings.accountAlreadyExists);
+          setAccountAlreadyExists(true);
         }
         return;
       }
 
       if (isRegistering) {
-        Alert.alert(
-          '¡Cuenta creada!',
-          'Te hemos enviado un correo de confirmación. Revisa tu bandeja de entrada.',
-        );
+        Alert.alert(strings.accountCreatedTitle, strings.accountCreatedMessage);
         setIsRegistering(false);
       }
     } catch (error: any) {
@@ -155,7 +152,7 @@ export function useAuthForm() {
       }
     } catch (error: any) {
       console.error(error);
-      Alert.alert('A problem occurred when connecting with Google');
+      Alert.alert(strings.googleConnectionError);
     } finally {
       if (Platform.OS !== 'web') {
         setGoogleLoading(false);
@@ -176,6 +173,6 @@ export function useAuthForm() {
     handleAuth,
     showEmailError,
     showPasswordError,
-    authErrorMessage,
+    accountAlreadyExists,
   };
 }

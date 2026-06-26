@@ -43,6 +43,14 @@ const translations = {
     verified: 'Ownership verified',
     cancel: 'Cancel',
     accountAlreadyExists: 'An account with this email already exists.',
+    notFoundTitle: 'Oops!',
+    notFoundMessage: "This screen doesn't exist.",
+    goToHome: 'Go to home screen!',
+    error: 'Error',
+    webSessionError: 'Could not validate the web session.',
+    accountCreatedTitle: 'Account created!',
+    accountCreatedMessage: "We've sent you a confirmation email. Check your inbox.",
+    googleConnectionError: 'A problem occurred when connecting with Google',
   },
   es: {
     longitude: 'Longitud',
@@ -88,6 +96,15 @@ const translations = {
     verified: 'Propiedad verificada',
     cancel: 'Cancelar',
     accountAlreadyExists: 'Ya existe una cuenta con este correo',
+    notFoundTitle: '¡Vaya!',
+    notFoundMessage: 'Esta pantalla no existe.',
+    goToHome: 'Ir a la pantalla principal',
+    error: 'Error',
+    webSessionError: 'No se pudo validar la sesión web.',
+    accountCreatedTitle: '¡Cuenta creada!',
+    accountCreatedMessage:
+      'Te hemos enviado un correo de confirmación. Revisa tu bandeja de entrada.',
+    googleConnectionError: 'Se produjo un problema al conectar con Google',
   },
 };
 
