@@ -38,6 +38,9 @@ export default function LoginScreen() {
     setIsRegistering,
     handleGoogleLogin,
     handleAuth,
+    showEmailError,
+    showPasswordError,
+    authErrorMessage,
   } = useAuthForm();
 
   return (
@@ -79,7 +82,9 @@ export default function LoginScreen() {
         </View>
 
         {/* email and password*/}
-        <View style={styles.loginCards}>
+        <View
+          style={[styles.loginCards, showEmailError && styles.errorBorder]}
+        >
           <TextInput
             style={[styles.text, { textAlign: 'center' }]}
             placeholder={strings.email}
@@ -92,7 +97,9 @@ export default function LoginScreen() {
           />
         </View>
 
-        <View style={styles.loginCards}>
+        <View
+          style={[styles.loginCards, showPasswordError && styles.errorBorder]}
+        >
           <TextInput
             style={[styles.text, { textAlign: 'center' }]}
             placeholder={strings.password}
@@ -104,6 +111,12 @@ export default function LoginScreen() {
             textContentType="password"
           />
         </View>
+
+        {authErrorMessage != null && (
+          <Text style={[styles.text, { color: COLORS.red, textAlign: 'center' }]}>
+            {authErrorMessage}
+          </Text>
+        )}
 
         {/* Login/Sign in button */}
         <TouchableOpacity

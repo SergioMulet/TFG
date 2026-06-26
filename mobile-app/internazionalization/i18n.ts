@@ -42,6 +42,7 @@ const translations = {
     verifying: 'Verifying document...',
     verified: 'Ownership verified',
     cancel: 'Cancel',
+    accountAlreadyExists: 'An account with this email already exists.',
   },
   es: {
     longitude: 'Longitud',
@@ -86,6 +87,7 @@ const translations = {
     verifying: 'Verificando documento...',
     verified: 'Propiedad verificada',
     cancel: 'Cancelar',
+    accountAlreadyExists: 'Ya existe una cuenta con este correo',
   },
 };
 

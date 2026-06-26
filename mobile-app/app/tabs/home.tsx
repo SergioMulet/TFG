@@ -87,10 +87,7 @@ export default function DashboardScreen() {
       <View style={styles.screenContainer}>
         <LanguageSelector></LanguageSelector>
         <View
-          style={[
-            styles.boatCard,
-            showShipIdError && { borderColor: COLORS.red, borderWidth: 4 },
-          ]}
+          style={[styles.boatCard, showShipIdError && styles.errorBorder]}
         >
           <TextInput
             style={styles.title}
@@ -109,7 +106,7 @@ export default function DashboardScreen() {
           style={[
             styles.boatCard,
             isFocus && { borderColor: COLORS.text, borderWidth: 2 },
-            showTypeError && { borderColor: COLORS.red, borderWidth: 4 },
+            showTypeError && styles.errorBorder,
           ]}
           placeholder={strings.chooseType}
           placeholderStyle={styles.text}
