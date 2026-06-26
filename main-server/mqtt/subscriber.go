@@ -36,13 +36,13 @@ func StartSubscriber() {
 
 		p := influxdb2.NewPoint(
 			"boat_telemetry",
-			map[string]string{"boat_name": payload.BoatName, "owner_email": payload.OwnerEmail, "ship_type": payload.ShipType},
+			map[string]string{"ship_id": payload.ShipId, "owner_email": payload.OwnerEmail, "ship_type": payload.ShipType},
 			map[string]interface{}{"latitude": payload.Latitude, "longitude": payload.Longitude},
 			payload.Timestamp,
 		)
 		writeAPI.WritePoint(p)
 		writeAPI.Flush()
-		fmt.Printf("--- [MQTT] telemetry from: %s ---\n", payload.BoatName)
+		fmt.Printf("--- [MQTT] telemetry from: %s ---\n", payload.ShipId)
 
 		handlers.BroadcastShips()
 	})

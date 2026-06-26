@@ -27,11 +27,17 @@ export default function DashboardScreen() {
   let strings = translations[lang];
 
   const { location, gpsActive, toggleGPS } = useLocationTracker();
-  const coordinatesType = gpsActive ? 'current' : location ? 'last' : null;
 
-  const [shipName, setShipName] = useState<string | null>(null);
+  const [shipId, setShipId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [lastKnownCoords, setLastKnownCoords] = useState<{
+    longitude: number;
+    latitude: number;
+  } | null>(null);
   const styles = globalStyles(isPhone);
+
+  const displayCoords = location?.coords ?? lastKnownCoords;
+  const coordinatesType = gpsActive ? 'current' : displayCoords ? 'last' : null;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -41,8 +47,12 @@ export default function DashboardScreen() {
 
   useEffect(() => {
     if (!userEmail) return;
-    mainServerService.getShipName(userEmail).then((name) => {
-      if (name) setShipName(name);
+    mainServerService.getShipDetails(userEmail).then((data) => {
+      if (data) {
+        setShipId(data.ship_id);
+        setSelectedType(data.type);
+        setLastKnownCoords({ longitude: data.lng, latitude: data.lat });
+      }
     });
   }, [userEmail]);
 
@@ -63,7 +73,7 @@ export default function DashboardScreen() {
 
   const enableTracking = () => {
     if (!userEmail) return;
-    toggleGPS(true, shipName || 'Barco_Prueba', userEmail, selectedType || 'other');
+    toggleGPS(true, shipId!, userEmail, selectedType!);
   };
 
   return (
@@ -73,8 +83,8 @@ export default function DashboardScreen() {
         <View style={styles.boatCard}>
           <TextInput
             style={styles.title}
-            value={shipName ?? ''}
-            onChangeText={(text) => setShipName(text)}
+            value={shipId ?? ''}
+            onChangeText={(text) => setShipId(text)}
             placeholder={strings.boatName}
             placeholderTextColor={COLORS.placeholder}
             selectTextOnFocus={true}
@@ -93,7 +103,7 @@ export default function DashboardScreen() {
           selectedTextStyle={styles.text}
           itemTextStyle={styles.text}
           data={SHIP_TYPES}
-          onChange={(item) => setSelectedType(item)}
+          onChange={(item) => setSelectedType(item.value)}
           labelField="label"
           valueField="value"
           value={selectedType}
@@ -107,10 +117,10 @@ export default function DashboardScreen() {
               {coordinatesType === 'current' ? strings.current : strings.last}
             </Text>
             <Text style={styles.text}>
-              {strings.longitude}: {location?.coords.longitude}
+              {strings.longitude}: {displayCoords?.longitude}
             </Text>
             <Text style={styles.text}>
-              {strings.latitude}: {location?.coords.latitude}
+              {strings.latitude}: {displayCoords?.latitude}
             </Text>
           </View>
         )}
@@ -132,15 +142,14 @@ export default function DashboardScreen() {
               if (!value) {
                 toggleGPS(
                   false,
-                  shipName || 'Barco_Prueba',
+                  shipId || 'Barco_Prueba',
                   userEmail,
                   selectedType || 'other',
                 );
                 return;
               }
-
               mainServerService
-                .isShipRegistered(shipName || 'Barco_Prueba', userEmail)
+                .isShipRegistered(shipId!, userEmail)
                 .then((registered) => {
                   if (registered) {
                     enableTracking();
@@ -153,10 +162,9 @@ export default function DashboardScreen() {
           />
         </View>
       </View>
-
       <OwnershipVerificationModal
         visible={showOwnershipModal}
-        boatName={shipName || 'Barco_Prueba'}
+        shipId={shipId || 'Barco_Prueba'}
         onCancel={() => setShowOwnershipModal(false)}
         onVerified={() => {
           setShowOwnershipModal(false);

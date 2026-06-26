@@ -20,7 +20,7 @@ export class LocationTracker {
   private readonly sendingState = new SendingState();
   private readonly sendingLocalState = new SendingLocalState();
 
-  private boatName = '';
+  private shipId = '';
   private userEmail = '';
   private shipType = '';
   private onUpdate: ((update: TrackerUpdate) => void) | null = null;
@@ -58,7 +58,7 @@ export class LocationTracker {
       await this.tryReconnectAndSync();
     }
 
-    this.trackerState.saveCoordinates(location, this.boatName, this.userEmail, this.shipType);
+    this.trackerState.saveCoordinates(location, this.shipId, this.userEmail, this.shipType);
     await this.trackerState.publishCoordinates(this);
 
     this.onUpdate?.({ location });
@@ -83,7 +83,7 @@ export class LocationTracker {
   }
 
   public async startTracking(
-    boatName: string,
+    shipId: string,
     userEmail: string,
     shipType: string,
     onUpdate: (update: TrackerUpdate) => void,
@@ -101,7 +101,7 @@ export class LocationTracker {
       );
     }
 
-    this.boatName = boatName;
+    this.shipId = shipId;
     this.userEmail = userEmail;
     this.shipType = shipType;
     this.onUpdate = onUpdate;

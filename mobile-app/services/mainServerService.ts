@@ -1,7 +1,7 @@
 const API_URL = 'http://192.168.1.132:8080/api';
 
 class MainServerService {
-  async getShipName(userEmail: string | null): Promise<string | null> {
+  async getShipDetails(userEmail: string | null) {
     if (!userEmail) return null;
 
     try {
@@ -11,7 +11,7 @@ class MainServerService {
       if (!response.ok) return null;
 
       const data = await response.json();
-      return data.boat_name || null;
+      return data;
     } catch (error) {
       console.error('Error fetching boat name: ', error);
       return null;
@@ -19,9 +19,9 @@ class MainServerService {
   }
 
   // Used to detect a new boat - owner combination
-  async isShipRegistered(boatName: string, userEmail: string): Promise<boolean> {
+  async isShipRegistered(shipId: string, userEmail: string): Promise<boolean> {
     try {
-      const params = new URLSearchParams({ boat_name: boatName, owner_email: userEmail });
+      const params = new URLSearchParams({ ship_id: shipId, owner_email: userEmail });
       const response = await fetch(`${API_URL}/ships/registered?${params.toString()}`);
       if (!response.ok) return false;
 

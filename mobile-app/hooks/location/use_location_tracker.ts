@@ -7,10 +7,10 @@ export function useLocationTracker() {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
 
   const toggleGPS = useCallback(
-    async (isActive: boolean, boatName: string, userEmail: string, shipType: string) => {
+    async (isActive: boolean, shipId: string, userEmail: string, shipType: string) => {
       if (isActive) {
         try {
-          await locationTracker.startTracking(boatName, userEmail, shipType, (update) => {
+          await locationTracker.startTracking(shipId, userEmail, shipType, (update) => {
             setLocation(update.location);
           });
           setGpsActive(true);

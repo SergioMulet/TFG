@@ -6,7 +6,7 @@ import { sqliteService } from '@/services/sqliteService';
 export class SendingState implements TrackerState {
   private topic: string = '';
   private telemetryPayload: {
-    boat_name: string;
+    ship_id: string;
     owner_email: string;
     ship_type: string;
     longitude: number;
@@ -14,9 +14,9 @@ export class SendingState implements TrackerState {
     timestamp: string;
   } | null = null;
 
-  saveCoordinates(location: LocationObject, boatName: string, userEmail: string, shipType: string): void {
+  saveCoordinates(location: LocationObject, shipId: string, userEmail: string, shipType: string): void {
     this.telemetryPayload = {
-      boat_name: boatName,
+      ship_id: shipId,
       owner_email: userEmail,
       ship_type: shipType,
       longitude: location.coords.longitude,
@@ -24,8 +24,8 @@ export class SendingState implements TrackerState {
       timestamp: new Date(location.timestamp).toISOString(),
     };
 
-    let uniqueBoatKey = `${boatName}-${userEmail}`;
-    this.topic = `maritime/boats/${uniqueBoatKey}/telemetry`;
+    let uniqueShipKey = `${shipId}-${userEmail}`;
+    this.topic = `maritime/boats/${uniqueShipKey}/telemetry`;
   }
 
   async publishCoordinates(context: any): Promise<void> {
@@ -39,7 +39,7 @@ export class SendingState implements TrackerState {
         context.setTrackerState(context.getSendingLocalState());
 
         await sqliteService.saveCoordinate(
-          this.telemetryPayload.boat_name,
+          this.telemetryPayload.ship_id,
           this.telemetryPayload.owner_email,
           this.telemetryPayload.ship_type,
           this.telemetryPayload.longitude,
