@@ -41,7 +41,7 @@ func main() {
 	router.GET("/api/ships", handlers.GetShips)
 	router.GET("/api/ships/registered", handlers.IsShipRegistered)
 	router.GET("/api/ships/:id", handlers.GetShipDetails)
-	router.GET("/api/ships/owner/:email", handlers.GetShipNameByOwner)
+	router.GET("/api/ships/owner/:email", handlers.GetShipDetailsByOwner)
 	router.GET("/ws/ships", handlers.ShipsWebSocket)
 
 	// deploy server

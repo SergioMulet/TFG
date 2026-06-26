@@ -148,19 +148,10 @@ type ShipRegistration struct {
 }
 
 // IsShipRegistered reports whether any telemetry has ever been recorded for
-// the given (ship_id, owner_email) pair. The mobile app calls this before
-// turning location sending on for the first time: if the pair is unknown,
-// the app must first prove ownership of the boat before any coordinates are
-// accepted.
-//
-// NOTE: ownership verification itself (e.g. validating a registration
-// document) is out of scope for this project and is currently simulated on
-// the client. This endpoint only answers "have we seen this ship+owner
-// before", it does not perform any ownership check itself.
+// the given ship_id. Currently, the system only allows to have one ship pe user
 func IsShipRegistered(c *gin.Context) {
 	shipId := c.Query("ship_id")
-	ownerEmail := c.Query("owner_email")
-	if shipId == "" || ownerEmail == "" {
+	if shipId == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ship_id and owner_email are required"})
 		return
 	}
@@ -174,9 +165,8 @@ func IsShipRegistered(c *gin.Context) {
 			|> range(start: -100y)
 			|> filter(fn: (r) => r["_measurement"] == "boat_telemetry")
 			|> filter(fn: (r) => r["ship_id"] == "%s")
-			|> filter(fn: (r) => r["owner_email"] == "%s")
 			|> limit(n: 1)
-	`, bucket, shipId, ownerEmail)
+	`, bucket, shipId)
 
 	result, err := queryAPI.Query(context.Background(), fluxQuery)
 	if err != nil {
@@ -189,7 +179,7 @@ func IsShipRegistered(c *gin.Context) {
 }
 
 func GetShipDetails(c *gin.Context) {
-	shipId := c.Param("id") // currently is the ship_id
+	shipId := c.Param("id")
 	org := os.Getenv("INFLUX_ORG")
 	bucket := os.Getenv("INFLUX_BUCKET")
 	queryAPI := repositories.Infra.Influx.QueryAPI(org)
@@ -209,45 +199,33 @@ func GetShipDetails(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	defer result.Close()
 
+	details := ShipDetails{ShipId: shipId, Type: "other"}
 	var route []Coordinates
-	var lastLat, lastLng float64
-	shipType := "other"
-	ownerEmail := ""
 
 	for result.Next() {
 		record := result.Record()
 		lat, _ := record.ValueByKey("latitude").(float64)
 		lng, _ := record.ValueByKey("longitude").(float64)
 
-		coor := Coordinates{Lat: lat, Lng: lng}
-		route = append(route, coor)
-
-		lastLat = lat
-		lastLng = lng
-		if t, ok := record.ValueByKey("ship_type").(string); ok && t != "" {
-			shipType = t
-		}
+		route = append(route, Coordinates{Lat: lat, Lng: lng})
+		details.Lat, details.Lng = lat, lng
 		if e, ok := record.ValueByKey("owner_email").(string); ok && e != "" {
-			ownerEmail = e
+			details.OwnerEmail = e
+		}
+		if t, ok := record.ValueByKey("ship_type").(string); ok && t != "" {
+			details.Type = t
 		}
 	}
-
-	details := ShipDetails{
-		ShipId:     shipId,
-		OwnerEmail: ownerEmail,
-		Type:       shipType,
-		Lat:        lastLat,
-		Lng:        lastLng,
-		Route24:    route,
-	}
+	details.Route24 = route
 
 	c.JSON(http.StatusOK, details)
 }
 
-// GetShipNameByOwner returns the most recent ship_id reported by the given
-// owner_email, so the mobile app can prefill the boat name it last used.
-func GetShipNameByOwner(c *gin.Context) {
+// GetShipDetailsByOwner returns the ship_id, type and last known coordinates
+// reported by the given owner_email.
+func GetShipDetailsByOwner(c *gin.Context) {
 	email := c.Param("email")
 	if email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "email param is required"})
@@ -264,8 +242,9 @@ func GetShipNameByOwner(c *gin.Context) {
 			|> range(start: -100y) // maybe a user has not log in since a long time
 			|> filter(fn: (r) => r["_measurement"] == "boat_telemetry")
 			|> filter(fn: (r) => r["owner_email"] == "%s")
-			|> filter(fn: (r) => r["_field"] == "latitude")
+			|> filter(fn: (r) => r["_field"] == "latitude" or r["_field"] == "longitude")
 			|> last()
+			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
 	`, bucket, escapedEmail)
 
 	result, err := queryAPI.Query(context.Background(), fluxQuery)
@@ -273,11 +252,26 @@ func GetShipNameByOwner(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	defer result.Close()
 
-	var shipId string
-	if result.Next() {
-		shipId, _ = result.Record().ValueByKey("ship_id").(string)
+	if !result.Next() {
+		c.Status(http.StatusNoContent)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"ship_id": shipId})
+	record := result.Record()
+	shipId, ok := record.ValueByKey("ship_id").(string)
+	if !ok || shipId == "" {
+		c.Status(http.StatusNoContent)
+		return
+	}
+
+	details := ShipDetails{ShipId: shipId, OwnerEmail: email, Type: "other"}
+	details.Lat, _ = record.ValueByKey("latitude").(float64)
+	details.Lng, _ = record.ValueByKey("longitude").(float64)
+	if t, ok := record.ValueByKey("ship_type").(string); ok && t != "" {
+		details.Type = t
+	}
+
+	c.JSON(http.StatusOK, details)
 }
