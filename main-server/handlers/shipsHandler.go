@@ -148,10 +148,11 @@ type ShipRegistration struct {
 }
 
 // IsShipRegistered reports whether any telemetry has ever been recorded for
-// the given ship_id. Currently, the system only allows to have one ship pe user
+// the given (ship_id, owner_email) pair.
 func IsShipRegistered(c *gin.Context) {
 	shipId := c.Query("ship_id")
-	if shipId == "" {
+	ownerEmail := c.Query("owner_email")
+	if shipId == "" || ownerEmail == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ship_id and owner_email are required"})
 		return
 	}
@@ -165,8 +166,9 @@ func IsShipRegistered(c *gin.Context) {
 			|> range(start: -100y)
 			|> filter(fn: (r) => r["_measurement"] == "boat_telemetry")
 			|> filter(fn: (r) => r["ship_id"] == "%s")
+			|> filter(fn: (r) => r["owner_email"] == "%s")
 			|> limit(n: 1)
-	`, bucket, shipId)
+	`, bucket, shipId, ownerEmail)
 
 	result, err := queryAPI.Query(context.Background(), fluxQuery)
 	if err != nil {
