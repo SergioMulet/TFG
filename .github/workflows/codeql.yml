@@ -1,10 +1,10 @@
-name: "CodeQL Analysis"
+name: 'CodeQL Analysis'
 
 on:
   push:
-    branches: ["main"]
+    branches: ['main']
   pull_request:
-    branches: ["main"]
+    branches: ['main']
 
 jobs:
   detect-changes:
@@ -28,9 +28,11 @@ jobs:
           filters: |
             go:
               - 'main-server/**'
+              - 'pre/**'
             js:
               - 'mobile-app/**'
               - 'web-application/**'
+              - 'pre/**'
 
       - name: Build language list
         id: set
@@ -79,4 +81,4 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
-          category: "/language:${{ matrix.language }}"
+          category: '/language:${{ matrix.language }}'
