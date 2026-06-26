@@ -1,12 +1,12 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
 
 export const COLORS = {
-  background: "#E8EEFA",
-  cardBackground: "#B3C7F0",
-  border: "#071D64",
-  text: "#071D64",
-  placeholder: "#071d6481",
-  red: "#F79797"
+  background: '#E8EEFA',
+  cardBackground: '#B3C7F0',
+  border: '#071D64',
+  text: '#071D64',
+  placeholder: '#071d6481',
+  red: '#F79797',
 };
 
 const globalStyles = (isPhone: boolean) =>
@@ -18,18 +18,23 @@ const globalStyles = (isPhone: boolean) =>
 
     screenContainer: {
       backgroundColor: COLORS.background,
-      justifyContent: "center",
-      alignItems: "center",
-      marginHorizontal: isPhone ? 0 : "25%",
-      marginTop: isPhone ? "20%" : 0,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginHorizontal: isPhone ? 0 : '25%',
+      marginTop: isPhone ? '20%' : 0,
       padding: 20,
     },
 
     dropdownContainer: {
       backgroundColor: COLORS.cardBackground,
-      borderColor: "#071D64",
+      borderColor: '#071D64',
       borderRadius: 15,
       borderWidth: 1,
+    },
+
+    errorBorder: {
+      borderColor: COLORS.red,
+      borderWidth: 4,
     },
 
     boatCard: {
@@ -38,33 +43,33 @@ const globalStyles = (isPhone: boolean) =>
       borderRadius: 15,
       borderWidth: 1,
 
-      padding: "5%",
-      width: "100%",
-      margin: "5%",
-      flexDirection: "column",
-      justifyContent: "space-between",
-      alignItems: "center",
+      padding: '5%',
+      width: '100%',
+      margin: '5%',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      alignItems: 'center',
     },
 
     title: {
       fontSize: 30,
-      fontWeight: "bold",
+      fontWeight: 'bold',
       color: COLORS.text,
-      textAlign: "center",
+      textAlign: 'center',
     },
 
     secondTitle: {
       fontSize: 24,
-      fontWeight: "bold",
+      fontWeight: 'bold',
       color: COLORS.text,
-      textAlign: "center",
-      margin:"5%",
+      textAlign: 'center',
+      margin: '5%',
     },
 
     text: {
       fontSize: 18,
       color: COLORS.text,
-      textAlign: "left",
+      textAlign: 'left',
     },
 
     loginCards: {
@@ -73,27 +78,27 @@ const globalStyles = (isPhone: boolean) =>
       borderRadius: 15,
       borderWidth: 1,
 
-      padding: "5%",
-      width: "100%",
-      margin: "5%",
-      flexDirection: "column",
-      justifyContent: "space-between",
-      alignItems: "center",
+      padding: '5%',
+      width: '100%',
+      margin: '5%',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      alignItems: 'center',
       paddingVertical: 12,
     },
 
     loginButton: {
       backgroundColor: COLORS.text,
-      borderColor: "#FFFFFF",
+      borderColor: '#FFFFFF',
       borderRadius: 15,
       borderWidth: 1,
 
-      padding: "5%",
-      width: "60%",
-      margin: "5%",
-      flexDirection: "column",
-      justifyContent: "space-between",
-      alignItems: "center",
+      padding: '5%',
+      width: '60%',
+      margin: '5%',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      alignItems: 'center',
       paddingVertical: 12,
     },
 
@@ -103,48 +108,48 @@ const globalStyles = (isPhone: boolean) =>
       borderRadius: 15,
       borderWidth: 1,
 
-      padding: "5%",
-      width: "100%",
-      margin: "5%",
-      flexDirection: "column",
-      justifyContent: "space-between",
-      alignItems: "center",
+      padding: '5%',
+      width: '100%',
+      margin: '5%',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      alignItems: 'center',
       paddingVertical: 12,
     },
 
     loginText: {
       fontSize: 18,
-      textDecorationLine: "underline",
+      textDecorationLine: 'underline',
       color: COLORS.text,
-      textAlign: "center",
+      textAlign: 'center',
     },
 
     googleButton: {
-      backgroundColor: "#ffffff",
+      backgroundColor: '#ffffff',
       borderRadius: 15,
       borderWidth: 1,
 
-      padding: "5%",
-      width: "60%",
-      margin: "5%",
-      alignItems: "center",
-      justifyContent: "center",
-      flexDirection: "row",
-      gap: "5%",
-      paddingVertical: 12,
+      padding: '5%',
+      width: '100%',
+      margin: '5%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row',
+      gap: '5%',
+      //paddingVertical: 12,
     },
 
     googleText: {
-      color: "#1f1f1f",
-      fontWeight: "bold",
+      color: '#1f1f1f',
+      fontWeight: 'bold',
       fontSize: 16,
     },
 
     separatorContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginVertical: "1%",
-      width: "100%",
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: '1%',
+      width: '100%',
     },
 
     separatorText: {
@@ -152,7 +157,7 @@ const globalStyles = (isPhone: boolean) =>
       marginHorizontal: 16,
       fontSize: 14,
       opacity: 0.6,
-      fontWeight: "bold",
+      fontWeight: 'bold',
     },
 
     separatorLine: {

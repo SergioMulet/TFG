@@ -8,7 +8,7 @@ class MainServerService {
       const response = await fetch(
         `${API_URL}/ships/owner/${encodeURIComponent(userEmail)}`,
       );
-      if (!response.ok) return null;
+      if (!response.ok || response.status === 204) return null;
 
       const data = await response.json();
       return data;

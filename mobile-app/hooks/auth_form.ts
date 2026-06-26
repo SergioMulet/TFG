@@ -5,13 +5,34 @@ import { supabase } from '../supabaseClient';
 import { authContextManager } from '@/services/auth/authContext';
 import { EmailStrategy } from '@/services/auth/strategies/emailAuthStrategy';
 import { GoogleStrategy } from '@/services/auth/strategies/googleAuthStrategy';
+import { useAutoDismiss } from '@/hooks/use_auto_dismiss';
+import useLanguage from '@/internazionalization/languageContext';
+import translations from '@/internazionalization/i18n';
 
 export function useAuthForm() {
+  const { lang } = useLanguage();
+  const strings = translations[lang];
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [showEmailError, setShowEmailError] = useState(false);
+  const [showPasswordError, setShowPasswordError] = useState(false);
+  const [accountAlreadyExists, setAccountAlreadyExists] = useState(false);
+
+  useAutoDismiss(showEmailError, setShowEmailError);
+  useAutoDismiss(showPasswordError, setShowPasswordError);
+
+  useEffect(() => {
+    setShowEmailError(false);
+    setAccountAlreadyExists(false);
+  }, [email]);
+  useEffect(() => {
+    setShowPasswordError(false);
+    setAccountAlreadyExists(false);
+  }, [password]);
 
   // get token from web, probably not needed since the application is intended to be used in mobile applications
   useEffect(() => {
@@ -34,7 +55,7 @@ export function useAuthForm() {
               window.history.replaceState({}, document.title, window.location.pathname);
             } catch (error) {
               console.error(error);
-              Alert.alert('Error', 'No se pudo validar la sesión web.');
+              Alert.alert(strings.error, strings.webSessionError);
             }
           }
         }
@@ -55,7 +76,8 @@ export function useAuthForm() {
 
   const handleAuth = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Por favor, rellena todos los campos');
+      if (!email) setShowEmailError(true);
+      if (!password) setShowPasswordError(true);
       return;
     }
 
@@ -70,18 +92,21 @@ export function useAuthForm() {
       });
 
       if (!result.success) {
-        throw result.error;
+        setShowEmailError(true);
+        setShowPasswordError(true);
+        if (result.accountExists) {
+          setAccountAlreadyExists(true);
+        }
+        return;
       }
 
       if (isRegistering) {
-        Alert.alert(
-          '¡Cuenta creada!',
-          'Te hemos enviado un correo de confirmación. Revisa tu bandeja de entrada.',
-        );
+        Alert.alert(strings.accountCreatedTitle, strings.accountCreatedMessage);
         setIsRegistering(false);
       }
     } catch (error: any) {
-      Alert.alert(isRegistering ? 'Error de Registro' : 'Error de Login', error.message);
+      setShowEmailError(true);
+      setShowPasswordError(true);
     } finally {
       setLoading(false);
     }
@@ -127,7 +152,7 @@ export function useAuthForm() {
       }
     } catch (error: any) {
       console.error(error);
-      Alert.alert('A problem occurred when connecting with Google');
+      Alert.alert(strings.googleConnectionError);
     } finally {
       if (Platform.OS !== 'web') {
         setGoogleLoading(false);
@@ -146,5 +171,8 @@ export function useAuthForm() {
     setIsRegistering,
     handleGoogleLogin,
     handleAuth,
+    showEmailError,
+    showPasswordError,
+    accountAlreadyExists,
   };
 }
