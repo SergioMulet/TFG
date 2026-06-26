@@ -29,7 +29,7 @@ export default function DashboardScreen() {
   const { location, gpsActive, toggleGPS } = useLocationTracker();
   const coordinatesType = gpsActive ? 'current' : location ? 'last' : null;
 
-  const [shipName, setShipName] = useState<string | null>(null);
+  const [shipId, setShipId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const styles = globalStyles(isPhone);
 
@@ -42,7 +42,7 @@ export default function DashboardScreen() {
   useEffect(() => {
     if (!userEmail) return;
     mainServerService.getShipName(userEmail).then((name) => {
-      if (name) setShipName(name);
+      if (name) setShipId(name);
     });
   }, [userEmail]);
 
@@ -63,7 +63,7 @@ export default function DashboardScreen() {
 
   const enableTracking = () => {
     if (!userEmail) return;
-    toggleGPS(true, shipName || 'Barco_Prueba', userEmail, selectedType || 'other');
+    toggleGPS(true, shipId || 'Barco_Prueba', userEmail, selectedType || 'other');
   };
 
   return (
@@ -73,8 +73,8 @@ export default function DashboardScreen() {
         <View style={styles.boatCard}>
           <TextInput
             style={styles.title}
-            value={shipName ?? ''}
-            onChangeText={(text) => setShipName(text)}
+            value={shipId ?? ''}
+            onChangeText={(text) => setShipId(text)}
             placeholder={strings.boatName}
             placeholderTextColor={COLORS.placeholder}
             selectTextOnFocus={true}
@@ -132,7 +132,7 @@ export default function DashboardScreen() {
               if (!value) {
                 toggleGPS(
                   false,
-                  shipName || 'Barco_Prueba',
+                  shipId || 'Barco_Prueba',
                   userEmail,
                   selectedType || 'other',
                 );
@@ -140,7 +140,7 @@ export default function DashboardScreen() {
               }
 
               mainServerService
-                .isShipRegistered(shipName || 'Barco_Prueba', userEmail)
+                .isShipRegistered(shipId || 'Barco_Prueba', userEmail)
                 .then((registered) => {
                   if (registered) {
                     enableTracking();
@@ -156,7 +156,7 @@ export default function DashboardScreen() {
 
       <OwnershipVerificationModal
         visible={showOwnershipModal}
-        boatName={shipName || 'Barco_Prueba'}
+        shipId={shipId || 'Barco_Prueba'}
         onCancel={() => setShowOwnershipModal(false)}
         onVerified={() => {
           setShowOwnershipModal(false);

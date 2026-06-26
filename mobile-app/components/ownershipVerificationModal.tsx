@@ -9,7 +9,7 @@ import translations from '@/internazionalization/i18n';
 
 interface OwnershipVerificationModalProps {
   visible: boolean;
-  boatName: string;
+  shipId: string;
   onCancel: () => void;
   onVerified: () => void;
 }
@@ -18,7 +18,7 @@ type Step = 'pickFile' | 'verifying' | 'verified';
 
 export default function OwnershipVerificationModal({
   visible,
-  boatName,
+  shipId,
   onCancel,
   onVerified,
 }: OwnershipVerificationModalProps) {
@@ -73,7 +73,7 @@ export default function OwnershipVerificationModal({
       <View style={styles.overlay}>
         <View style={styles.card}>
           <Text style={styles.title}>{strings.verifyOwnershipTitle}</Text>
-          <Text style={styles.boatName}>{boatName}</Text>
+          <Text style={styles.shipIdText}>{shipId}</Text>
 
           {step === 'pickFile' && (
             <>
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  boatName: {
+  shipIdText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.text,

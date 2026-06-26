@@ -32,12 +32,12 @@ type ShipData struct {
 }
 
 type ShipDetails struct {
-	ID      string        `json:"id"`
-	Name    string        `json:"name"`
-	Type    string        `json:"type"`
-	Lat     float64       `json:"lat"`
-	Lng     float64       `json:"lng"`
-	Route24 []Coordinates `json:"route24"`
+	ShipId     string        `json:"ship_id"`
+	OwnerEmail string        `json:"owner_email"`
+	Type       string        `json:"type"`
+	Lat        float64       `json:"lat"`
+	Lng        float64       `json:"lng"`
+	Route24    []Coordinates `json:"route24"`
 }
 
 func fetchShips() ([]ShipData, error) {
@@ -64,18 +64,18 @@ func fetchShips() ([]ShipData, error) {
 	for result.Next() {
 		record := result.Record()
 
-		boatName, nameOk := record.ValueByKey("boat_name").(string)
+		shipId, shipIdOk := record.ValueByKey("ship_id").(string)
 		ownerEmail, emailOk := record.ValueByKey("owner_email").(string)
 
-		if boatName == "" || !nameOk || !emailOk || ownerEmail == "" {
+		if shipId == "" || !shipIdOk || !emailOk || ownerEmail == "" {
 			continue
 		}
 
 		lat, _ := record.ValueByKey("latitude").(float64)
 		lng, _ := record.ValueByKey("longitude").(float64)
 
-		vesselsMap[boatName] = &ShipData{
-			ID:  boatName,
+		vesselsMap[shipId] = &ShipData{
+			ID:  shipId,
 			Lat: lat,
 			Lng: lng,
 		}
@@ -148,20 +148,20 @@ type ShipRegistration struct {
 }
 
 // IsShipRegistered reports whether any telemetry has ever been recorded for
-// the given (boat_name, owner_email) pair. The mobile app calls this before
+// the given (ship_id, owner_email) pair. The mobile app calls this before
 // turning location sending on for the first time: if the pair is unknown,
 // the app must first prove ownership of the boat before any coordinates are
 // accepted.
 //
 // NOTE: ownership verification itself (e.g. validating a registration
 // document) is out of scope for this project and is currently simulated on
-// the client. This endpoint only answers "have we seen this boat+owner
+// the client. This endpoint only answers "have we seen this ship+owner
 // before", it does not perform any ownership check itself.
 func IsShipRegistered(c *gin.Context) {
-	boatName := c.Query("boat_name")
+	shipId := c.Query("ship_id")
 	ownerEmail := c.Query("owner_email")
-	if boatName == "" || ownerEmail == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "boat_name and owner_email are required"})
+	if shipId == "" || ownerEmail == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ship_id and owner_email are required"})
 		return
 	}
 
@@ -173,10 +173,10 @@ func IsShipRegistered(c *gin.Context) {
 		from(bucket: "%s")
 			|> range(start: -100y)
 			|> filter(fn: (r) => r["_measurement"] == "boat_telemetry")
-			|> filter(fn: (r) => r["boat_name"] == "%s")
+			|> filter(fn: (r) => r["ship_id"] == "%s")
 			|> filter(fn: (r) => r["owner_email"] == "%s")
 			|> limit(n: 1)
-	`, bucket, boatName, ownerEmail)
+	`, bucket, shipId, ownerEmail)
 
 	result, err := queryAPI.Query(context.Background(), fluxQuery)
 	if err != nil {
@@ -189,7 +189,7 @@ func IsShipRegistered(c *gin.Context) {
 }
 
 func GetShipDetails(c *gin.Context) {
-	boatID := c.Param("id") // currently is the boat_name
+	shipId := c.Param("id") // currently is the ship_id
 	org := os.Getenv("INFLUX_ORG")
 	bucket := os.Getenv("INFLUX_BUCKET")
 	queryAPI := repositories.Infra.Influx.QueryAPI(org)
@@ -198,11 +198,11 @@ func GetShipDetails(c *gin.Context) {
 		from(bucket: "%s")
 			|> range(start: -24h)
 			|> filter(fn: (r) => r["_measurement"] == "boat_telemetry")
-			|> filter(fn: (r) => r["boat_name"] == "%s")
+			|> filter(fn: (r) => r["ship_id"] == "%s")
 			|> filter(fn: (r) => r["_field"] == "latitude" or r["_field"] == "longitude")
 			|> sort(columns: ["_time"], desc: false)
 			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-	`, bucket, boatID)
+	`, bucket, shipId)
 
 	result, err := queryAPI.Query(context.Background(), fluxQuery)
 	if err != nil {
@@ -213,6 +213,7 @@ func GetShipDetails(c *gin.Context) {
 	var route []Coordinates
 	var lastLat, lastLng float64
 	shipType := "other"
+	ownerEmail := ""
 
 	for result.Next() {
 		record := result.Record()
@@ -227,21 +228,24 @@ func GetShipDetails(c *gin.Context) {
 		if t, ok := record.ValueByKey("ship_type").(string); ok && t != "" {
 			shipType = t
 		}
+		if e, ok := record.ValueByKey("owner_email").(string); ok && e != "" {
+			ownerEmail = e
+		}
 	}
 
 	details := ShipDetails{
-		ID:      boatID,
-		Name:    boatID,
-		Type:    shipType,
-		Lat:     lastLat,
-		Lng:     lastLng,
-		Route24: route,
+		ShipId:     shipId,
+		OwnerEmail: ownerEmail,
+		Type:       shipType,
+		Lat:        lastLat,
+		Lng:        lastLng,
+		Route24:    route,
 	}
 
 	c.JSON(http.StatusOK, details)
 }
 
-// GetShipNameByOwner returns the most recent boat_name reported by the given
+// GetShipNameByOwner returns the most recent ship_id reported by the given
 // owner_email, so the mobile app can prefill the boat name it last used.
 func GetShipNameByOwner(c *gin.Context) {
 	email := c.Param("email")
@@ -270,10 +274,10 @@ func GetShipNameByOwner(c *gin.Context) {
 		return
 	}
 
-	var boatName string
+	var shipId string
 	if result.Next() {
-		boatName, _ = result.Record().ValueByKey("boat_name").(string)
+		shipId, _ = result.Record().ValueByKey("ship_id").(string)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"boat_name": boatName})
+	c.JSON(http.StatusOK, gin.H{"ship_id": shipId})
 }

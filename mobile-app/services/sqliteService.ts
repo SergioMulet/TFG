@@ -12,7 +12,7 @@ class SqliteService {
       await this.db.execAsync(`
             CREATE TABLE IF NOT EXISTS offline_telemetry (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          boat_name TEXT,
+          ship_id TEXT,
           owner_email TEXT,
           ship_type TEXT,
           longitude REAL,
@@ -27,7 +27,7 @@ class SqliteService {
   }
 
   async saveCoordinate(
-    boatName: string,
+    shipId: string,
     email: string,
     shipType: string,
     lon: number,
@@ -37,8 +37,8 @@ class SqliteService {
     if (!this.db) await this.initDB();
     try {
       await this.db?.runAsync(
-        `INSERT INTO offline_telemetry (boat_name, owner_email, ship_type, longitude, latitude, timestamp) VALUES (?, ?, ?, ?, ?, ?);`,
-        [boatName, email, shipType, lon, lat, timestamp],
+        `INSERT INTO offline_telemetry (ship_id, owner_email, ship_type, longitude, latitude, timestamp) VALUES (?, ?, ?, ?, ?, ?);`,
+        [shipId, email, shipType, lon, lat, timestamp],
       );
       console.log('Coordenada guardada en local');
     } catch (error) {
@@ -51,7 +51,7 @@ class SqliteService {
     try {
       let allRows = await this.db?.getAllAsync<{
         id: number;
-        boat_name: string;
+        ship_id: string;
         owner_email: string;
         ship_type: string;
         longitude: number;

@@ -3,7 +3,7 @@ import * as Location from 'expo-location';
 export interface TrackerState {
   saveCoordinates(
     location: Location.LocationObject,
-    boatName: string,
+    shipId: string,
     userEmail: string,
     shipType: string,
   ): void;

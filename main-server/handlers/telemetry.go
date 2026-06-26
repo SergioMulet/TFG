@@ -13,7 +13,7 @@ import (
 )
 
 type TelemetryPayload struct {
-	BoatName   string    `json:"boat_name"`
+	ShipId     string    `json:"ship_id"`
 	OwnerEmail string    `json:"owner_email"`
 	ShipType   string    `json:"ship_type"`
 	Latitude   float64   `json:"latitude"`
@@ -39,7 +39,7 @@ func SyncOfflineTelemetry(c *gin.Context) {
 		}
 		p := influxdb2.NewPoint(
 			"boat_telemetry",
-			map[string]string{"boat_name": data.BoatName, "owner_email": data.OwnerEmail, "ship_type": data.ShipType},
+			map[string]string{"ship_id": data.ShipId, "owner_email": data.OwnerEmail, "ship_type": data.ShipType},
 			map[string]interface{}{"latitude": data.Latitude, "longitude": data.Longitude},
 			data.Timestamp,
 		)
