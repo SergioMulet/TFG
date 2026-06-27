@@ -13,11 +13,15 @@ import Map from '../components/Map';
 import LanguageSelector from '../components/LanguageSelector';
 import SearchBar from '../components/SearchBar';
 import { shipLoader } from '../services/shipLoader';
+import { SHIP_TYPE_KEYS } from '../shipTypes';
 
 export default function Dashboard() {
   const [selectedShipId, setSelectedShipId] = useState(null);
   const [ships, setShips] = useState([]);
   const [displayedRoute, setDisplayedRoute] = useState(null);
+  const [selectedTypes, setSelectedTypes] = useState(
+    SHIP_TYPE_KEYS.reduce((acc, key) => ({ ...acc, [key]: true }), {}),
+  );
   const handleBackToFilters = () => {
     setSelectedShipId(null);
   };
@@ -64,6 +68,8 @@ export default function Dashboard() {
           onBackToFilters={handleBackToFilters}
           ships={ships}
           onDisplayRoute={setDisplayedRoute}
+          selectedTypes={selectedTypes}
+          setSelectedTypes={setSelectedTypes}
         />
       </Box>
 
@@ -77,6 +83,7 @@ export default function Dashboard() {
             onSelectShip={setSelectedShipId}
             ships={ships}
             route={displayedRoute}
+            selectedTypes={selectedTypes}
           />
         </Box>
       </Box>

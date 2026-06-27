@@ -19,35 +19,20 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ShipShapeIcon from './ShipShapeIcon';
 import useLanguage from '../internationalization/LanguageContext';
 import translations from '../internationalization/i18n';
+import { SHIP_CONFIG, SHIP_TYPE_KEYS } from '../shipTypes';
 
-export default function FilterSidebar() {
+export default function FilterSidebar({ selectedTypes, setSelectedTypes }) {
   const [expanded, setExpanded] = useState(true);
   const { lang, setLang } = useLanguage();
   const strings = translations[lang];
 
-  const SHIP_CONFIG = {
-    cargo: { color: '#ffde59' },
-    tanker: { color: '#ff914d' },
-    cruise: { color: '#00bf63' },
-    fishing: { color: '#38b6ff' },
-    yacht: { color: '#cb6ce6' },
-    military: { color: '#ff3131' },
-    tug: { color: '#3a6f55' },
-    boat: { color: '#263f60' },
-    other: { color: '#a6a6a6' },
-  };
-
-  const SHIP_KEYS = Object.keys(SHIP_CONFIG);
+  const SHIP_KEYS = SHIP_TYPE_KEYS;
 
   const SHIP_TYPES = SHIP_KEYS.map((key) => ({
     label: strings[key],
     value: key,
     color: SHIP_CONFIG[key].color,
   }));
-
-  const [selectedTypes, setSelectedTypes] = useState(
-    SHIP_KEYS.reduce((acc, key) => ({ ...acc, [key]: true }), {}),
-  );
 
   const handleToggle = (key) => {
     setSelectedTypes((prev) => ({ ...prev, [key]: !prev[key] }));

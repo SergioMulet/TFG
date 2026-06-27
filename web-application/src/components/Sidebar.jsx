@@ -17,9 +17,15 @@ import {
 import FilterSidebar from './FilterSidebar';
 import DetailsSidebar from './DetailsSidebar';
 
-export default function Sidebar({ selectedShipId, onBackToFilters, onDisplayRoute }) {
+export default function Sidebar({
+  selectedShipId,
+  onBackToFilters,
+  onDisplayRoute,
+  selectedTypes,
+  setSelectedTypes,
+}) {
   if (selectedShipId === null) {
-    return <FilterSidebar />;
+    return <FilterSidebar selectedTypes={selectedTypes} setSelectedTypes={setSelectedTypes} />;
   }
 
   return (

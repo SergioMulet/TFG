@@ -11,7 +11,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import useLanguage from '../internationalization/LanguageContext';
 import translations from '../internationalization/i18n';
-import { searchService } from '../services/searchService';
+import { filterService } from '../services/filterService';
 
 export default function SearchBar({ ships, onSelectShip }) {
   const { lang } = useLanguage();
@@ -21,7 +21,7 @@ export default function SearchBar({ ships, onSelectShip }) {
   const [isFocused, setIsFocused] = useState(false);
 
   const suggestions = useMemo(
-    () => searchService.findShips(ships, query),
+    () => filterService.findShips(ships, query),
     [ships, query],
   );
 
