@@ -4,8 +4,8 @@ services:
     image: eclipse-mosquitto:latest
     container_name: maritime_mosquitto
     ports:
-      - "1883:1883" # Pure TCP 
-      - "9001:9001" # webSockets
+      - '1883:1883' # Pure TCP
+      - '9001:9001' # webSockets
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
       - mosquitto_data:/mosquitto/data
@@ -16,11 +16,11 @@ services:
     image: influxdb:2.7
     container_name: maritime_influxdb
     ports:
-      - "8086:8086" 
+      - '8086:8086'
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_INIT_USERNAME}
-      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUX_INIT_PASSWORD} 
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUX_INIT_PASSWORD}
       - DOCKER_INFLUXDB_INIT_ORG=${INFLUX_ORG}
       - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUX_BUCKET}
       - DOCKER_INFLUXDB_INIT_RETENTION=${INFLUX_RETENTION}
@@ -28,8 +28,31 @@ services:
       - influxdb_data:/var/lib/influxdb2
       - influxdb_config:/etc/influxdb2
 
+  # Grafana - admin dashboards over InfluxDB telemetry
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: maritime_grafana
+    ports:
+      - '3000:3000'
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      # Required to embed Grafana in an iframe (it sends X-Frame-Options: deny by default).
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - INFLUX_URL=http://influxdb:8086
+      - INFLUX_ORG=${INFLUX_ORG}
+      - INFLUX_BUCKET=${INFLUX_BUCKET}
+      - INFLUX_TOKEN=${INFLUX_TOKEN}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - influxdb
+
 volumes:
   mosquitto_data:
   mosquitto_log:
   influxdb_data:
   influxdb_config:
+  grafana_data:
