@@ -1,5 +1,8 @@
-const API_URL = 'http://localhost:8080/api';
-const WS_URL = 'ws://localhost:8080/ws/ships';
+//As long as main-server stays reachable on the same host as the web app, just on
+// its own port.
+const { protocol, hostname } = window.location;
+const API_URL = `${protocol}//${hostname}:8080/api`;
+const WS_URL = `${protocol === 'https:' ? 'wss' : 'ws'}://${hostname}:8080/ws/ships`;
 const RECONNECT_DELAY_MS = 3000;
 
 export const shipService = {
@@ -24,7 +27,9 @@ export const shipService = {
 
       socket.onclose = () => {
         if (closedByClient) return;
-        console.warn(`Ships WebSocket closed, reconnecting in ${RECONNECT_DELAY_MS}ms...`);
+        console.warn(
+          `Ships WebSocket closed, reconnecting in ${RECONNECT_DELAY_MS}ms...`,
+        );
         setTimeout(connect, RECONNECT_DELAY_MS);
       };
     };

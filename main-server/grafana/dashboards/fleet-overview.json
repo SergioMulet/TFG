@@ -1,0 +1,187 @@
+{
+  "title": "Fleet Overview",
+  "uid": "fleet-overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "time": { "from": "now-24h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "bucket",
+        "type": "constant",
+        "label": "InfluxDB bucket",
+        "query": "telemetry_data",
+        "current": { "value": "telemetry_data", "text": "telemetry_data" },
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Ships reporting (24h)",
+      "type": "stat",
+      "datasource": "InfluxDB",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "datasource": "InfluxDB",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: -24h)\n  |> filter(fn: (r) => r._measurement == \"boat_telemetry\" and r._field == \"latitude\")\n  |> group()\n  |> distinct(column: \"ship_id\")\n  |> count()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Telemetry points / min",
+      "type": "timeseries",
+      "datasource": "InfluxDB",
+      "gridPos": { "h": 8, "w": 18, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "datasource": "InfluxDB",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: -6h)\n  |> filter(fn: (r) => r._measurement == \"boat_telemetry\" and r._field == \"latitude\")\n  |> aggregateWindow(every: 1m, fn: count, createEmpty: false)\n  |> group()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Last known position per ship",
+      "type": "table",
+      "datasource": "InfluxDB",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "datasource": "InfluxDB",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._measurement == \"boat_telemetry\" and (r._field == \"latitude\" or r._field == \"longitude\"))\n  |> last()\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> keep(columns: [\"_time\", \"ship_id\", \"owner_email\", \"ship_type\", \"latitude\", \"longitude\"])\n  |> sort(columns: [\"_time\"], desc: true)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Total telemetry points (all time)",
+      "type": "stat",
+      "datasource": "InfluxDB",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 18 },
+      "targets": [
+        {
+          "datasource": "InfluxDB",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: -100y)\n  |> filter(fn: (r) => r._measurement == \"boat_telemetry\" and r._field == \"latitude\")\n  |> group()\n  |> count()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Ships by type (24h)",
+      "type": "piechart",
+      "datasource": "InfluxDB",
+      "gridPos": { "h": 8, "w": 9, "x": 6, "y": 18 },
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.labels.ship_type}"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": "/.*cargo.*/" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#ffde59" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "/.*tanker.*/" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#ff914d" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "/.*cruise.*/" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#00bf63" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "/.*fishing.*/" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#38b6ff" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "/.*yacht.*/" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#cb6ce6" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "/.*military.*/" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#ff3131" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "/.*tug.*/" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#3a6f55" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "/.*boat.*/" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#263f60" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "/.*other.*/" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "#a6a6a6" } }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": "InfluxDB",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: -24h)\n  |> filter(fn: (r) => r._measurement == \"boat_telemetry\" and r._field == \"latitude\")\n  |> filter(fn: (r) => exists r.ship_type)\n  |> group(columns: [\"ship_type\", \"ship_id\"])\n  |> last()\n  |> group(columns: [\"ship_type\"])\n  |> count()",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Ship positions",
+      "type": "geomap",
+      "datasource": "InfluxDB",
+      "gridPos": { "h": 8, "w": 9, "x": 15, "y": 18 },
+      "options": {
+        "view": { "id": "zero", "lat": 0, "lon": 0, "zoom": 2 },
+        "layers": [
+          {
+            "type": "markers",
+            "name": "Ships",
+            "config": {
+              "style": {
+                "color": { "fixed": "#0284c7" },
+                "size": { "fixed": 6 }
+              }
+            },
+            "location": {
+              "mode": "coords",
+              "latitude": "latitude",
+              "longitude": "longitude"
+            }
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": "InfluxDB",
+          "query": "from(bucket: \"${bucket}\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._measurement == \"boat_telemetry\" and (r._field == \"latitude\" or r._field == \"longitude\"))\n  |> last()\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> keep(columns: [\"ship_id\", \"latitude\", \"longitude\"])",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}
