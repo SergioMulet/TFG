@@ -5,8 +5,8 @@ import { NotSendingState } from './states/not_sending_state';
 import { SendingLocalState } from './states/sending_local_state';
 import { SendingState } from './states/sending_state';
 
-const TRACKING_INTERVAL_MS = 10000;
-const TRACKING_DISTANCE_INTERVAL_M = 0;
+const TRACKING_INTERVAL_MS = 30000;
+const TRACKING_DISTANCE_INTERVAL_M = 50;
 export const BACKGROUND_LOCATION_TASK_NAME = 'background-location-task';
 
 export interface TrackerUpdate {
@@ -58,7 +58,12 @@ export class LocationTracker {
       await this.tryReconnectAndSync();
     }
 
-    this.trackerState.saveCoordinates(location, this.shipId, this.userEmail, this.shipType);
+    this.trackerState.saveCoordinates(
+      location,
+      this.shipId,
+      this.userEmail,
+      this.shipType,
+    );
     await this.trackerState.publishCoordinates(this);
 
     this.onUpdate?.({ location });
