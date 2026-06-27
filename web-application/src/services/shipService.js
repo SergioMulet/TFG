@@ -1,23 +1,42 @@
 const API_URL = 'http://localhost:8080/api';
 const WS_URL = 'ws://localhost:8080/ws/ships';
+const RECONNECT_DELAY_MS = 3000;
 
 export const shipService = {
   connectShips(onShips) {
-    const socket = new WebSocket(WS_URL);
+    let socket;
+    let closedByClient = false;
 
-    socket.onmessage = (event) => {
-      try {
-        onShips(JSON.parse(event.data));
-      } catch (error) {
-        console.error('Error parsing ships payload:', error);
-      }
+    const connect = () => {
+      socket = new WebSocket(WS_URL);
+
+      socket.onmessage = (event) => {
+        try {
+          onShips(JSON.parse(event.data));
+        } catch (error) {
+          console.error('Error parsing ships payload:', error);
+        }
+      };
+
+      socket.onerror = (error) => {
+        console.error('Ships WebSocket error:', error);
+      };
+
+      socket.onclose = () => {
+        if (closedByClient) return;
+        console.warn(`Ships WebSocket closed, reconnecting in ${RECONNECT_DELAY_MS}ms...`);
+        setTimeout(connect, RECONNECT_DELAY_MS);
+      };
     };
 
-    socket.onerror = (error) => {
-      console.error('Ships WebSocket error:', error);
-    };
+    connect();
 
-    return socket;
+    return {
+      close() {
+        closedByClient = true;
+        socket.close();
+      },
+    };
   },
 
   async getShipDetails(shipId) {
