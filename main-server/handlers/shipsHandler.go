@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"main_server/repositories"
 	"main_server/ws"
@@ -26,9 +27,10 @@ type Coordinates struct {
 }
 
 type ShipData struct {
-	ID  string  `json:"id"`
-	Lat float64 `json:"lat"`
-	Lng float64 `json:"lng"`
+	ID   string  `json:"id"`
+	Lat  float64 `json:"lat"`
+	Lng  float64 `json:"lng"`
+	Type string  `json:"type"`
 }
 
 type ShipDetails struct {
@@ -38,6 +40,14 @@ type ShipDetails struct {
 	Lat        float64       `json:"lat"`
 	Lng        float64       `json:"lng"`
 	Route24    []Coordinates `json:"route24"`
+}
+
+// escapeFluxString escapes a value for safe interpolation into a Flux
+// double-quoted string literal
+func escapeFluxString(s string) string {
+	s = strings.ReplaceAll(s, `\`, `\\`)
+	s = strings.ReplaceAll(s, `"`, `\"`)
+	return s
 }
 
 func fetchShips() ([]ShipData, error) {
@@ -60,6 +70,7 @@ func fetchShips() ([]ShipData, error) {
 	}
 
 	vesselsMap := make(map[string]*ShipData)
+	latestTime := make(map[string]time.Time)
 
 	for result.Next() {
 		record := result.Record()
@@ -71,13 +82,24 @@ func fetchShips() ([]ShipData, error) {
 			continue
 		}
 
+		recordTime := record.Time()
+		if seen, ok := latestTime[shipId]; ok && !recordTime.After(seen) {
+			continue
+		}
+		latestTime[shipId] = recordTime
+
 		lat, _ := record.ValueByKey("latitude").(float64)
 		lng, _ := record.ValueByKey("longitude").(float64)
+		shipType, _ := record.ValueByKey("ship_type").(string)
+		if shipType == "" {
+			shipType = "other"
+		}
 
 		vesselsMap[shipId] = &ShipData{
-			ID:  shipId,
-			Lat: lat,
-			Lng: lng,
+			ID:   shipId,
+			Lat:  lat,
+			Lng:  lng,
+			Type: shipType,
 		}
 	}
 
@@ -168,7 +190,7 @@ func IsShipRegistered(c *gin.Context) {
 			|> filter(fn: (r) => r["ship_id"] == "%s")
 			|> filter(fn: (r) => r["owner_email"] == "%s")
 			|> limit(n: 1)
-	`, bucket, shipId, ownerEmail)
+	`, bucket, escapeFluxString(shipId), escapeFluxString(ownerEmail))
 
 	result, err := queryAPI.Query(context.Background(), fluxQuery)
 	if err != nil {
@@ -194,7 +216,7 @@ func GetShipDetails(c *gin.Context) {
 			|> filter(fn: (r) => r["_field"] == "latitude" or r["_field"] == "longitude")
 			|> sort(columns: ["_time"], desc: false)
 			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-	`, bucket, shipId)
+	`, bucket, escapeFluxString(shipId))
 
 	result, err := queryAPI.Query(context.Background(), fluxQuery)
 	if err != nil {
@@ -233,7 +255,7 @@ func GetShipDetailsByOwner(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "email param is required"})
 		return
 	}
-	escapedEmail := strings.ReplaceAll(email, `"`, `\"`)
+	escapedEmail := escapeFluxString(email)
 
 	org := os.Getenv("INFLUX_ORG")
 	bucket := os.Getenv("INFLUX_BUCKET")

@@ -3,9 +3,13 @@ package ws
 import (
 	"log"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
+
+// writeTimeout bounds how long a single broadcast write can block.
+const writeTimeout = 5 * time.Second
 
 type hub struct {
 	mu      sync.Mutex
@@ -34,6 +38,7 @@ func (h *hub) Broadcast(message []byte) {
 	defer h.mu.Unlock()
 
 	for conn := range h.clients {
+		conn.SetWriteDeadline(time.Now().Add(writeTimeout))
 		if err := conn.WriteMessage(websocket.TextMessage, message); err != nil {
 			log.Printf("⚠️ WS write error, dropping client: %v", err)
 			conn.Close()
