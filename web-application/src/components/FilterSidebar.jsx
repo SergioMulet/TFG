@@ -37,8 +37,6 @@ export default function FilterSidebar() {
     other: { color: '#a6a6a6' },
   };
 
-  const CARD_COLOR = '#1e293b';
-
   const SHIP_KEYS = Object.keys(SHIP_CONFIG);
 
   const SHIP_TYPES = SHIP_KEYS.map((key) => ({
@@ -70,7 +68,9 @@ export default function FilterSidebar() {
         flexDirection: 'column',
         height: '100%',
         minWidth: expanded ? 300 : 50,
-        backgroundColor: '#b8ebff',
+        backgroundColor: 'accent.main',
+        border: 3,
+        borderColor: 'secondary.main',
         p: 2,
       }}
     >
@@ -84,13 +84,17 @@ export default function FilterSidebar() {
           mb: 2,
         }}
       >
-        <IconButton onClick={() => setExpanded(!expanded)} size="small" edge={expanded ? 'start' : false}>
+        <IconButton
+          onClick={() => setExpanded(!expanded)}
+          size="small"
+          edge={expanded ? 'start' : false}
+        >
           {expanded ? <ChevronLeftIcon /> : <MenuIcon />}
         </IconButton>
         {expanded && <Typography variant="h2">{strings.filters}</Typography>}
       </Box>
 
-      <Divider sx={{ mb: 3, borderColor: CARD_COLOR }} />
+      <Divider sx={{ mb: 3, borderColor: 'secondary.main' }} />
 
       <List sx={{ p: 0 }}>
         {/* All */}

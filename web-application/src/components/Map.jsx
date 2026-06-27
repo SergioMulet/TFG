@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
-import { Box } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import L from 'leaflet';
 import 'leaflet-polylinedecorator';
 
@@ -25,7 +25,7 @@ const routePointIcon = L.divIcon({
   iconAnchor: [10, 10],
 });
 
-function RouteDirectionArrows({ positions }) {
+function RouteDirectionArrows({ positions, color }) {
   const map = useMap();
 
   useEffect(() => {
@@ -39,19 +39,20 @@ function RouteDirectionArrows({ positions }) {
           symbol: L.Symbol.arrowHead({
             pixelSize: 10,
             polygon: false,
-            pathOptions: { color: '#ef4444', weight: 2 },
+            pathOptions: { color, weight: 2 },
           }),
         },
       ],
     }).addTo(map);
 
     return () => decorator.remove();
-  }, [map, positions]);
+  }, [map, positions, color]);
 
   return null;
 }
 
 export default function Map({ selectedShipId, onSelectShip, ships, route }) {
+  const theme = useTheme();
   const defaultPosition = [40.59, -3.91];
 
   const realShips = ships || [];
@@ -81,9 +82,9 @@ export default function Map({ selectedShipId, onSelectShip, ships, route }) {
           <>
             <Polyline
               positions={routePoints}
-              pathOptions={{ color: '#ef4444', weight: 2, dashArray: '6, 8' }}
+              pathOptions={{ color: theme.palette.route.main, weight: 2, dashArray: '6, 8' }}
             />
-            <RouteDirectionArrows positions={routePoints} />
+            <RouteDirectionArrows positions={routePoints} color={theme.palette.route.main} />
           </>
         )}
 
@@ -96,7 +97,7 @@ export default function Map({ selectedShipId, onSelectShip, ships, route }) {
           <Marker
             key={ship.id}
             position={[ship.lat, ship.lng]}
-            icon={createLeafletShipIcon('#0284c7')}
+            icon={createLeafletShipIcon(theme.palette.primary.main)}
             eventHandlers={{
               click: () => {
                 onSelectShip(ship.id);
