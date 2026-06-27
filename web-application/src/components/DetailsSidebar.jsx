@@ -8,11 +8,9 @@ import useLanguage from '../internationalization/LanguageContext';
 import translations from '../internationalization/i18n';
 import { shipLoader } from '../services/shipLoader';
 
-const CARD_COLOR = '#1e293b';
-
 const cardSx = {
-  backgroundColor: CARD_COLOR,
-  color: 'white',
+  backgroundColor: 'secondary.main',
+  color: 'secondary.contrastText',
   borderRadius: '16px',
   textAlign: 'center',
   py: 2,
@@ -41,7 +39,9 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
         flexDirection: 'column',
         height: '100%',
         minWidth: 300,
-        backgroundColor: '#b8ebff',
+        backgroundColor: 'accent.main',
+        border: 3,
+        borderColor: 'secondary.main',
         p: 2,
       }}
     >
@@ -53,30 +53,30 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
         <Typography variant="h2">{strings.shipDetails}</Typography>
       </Box>
 
-      <Divider sx={{ mb: 3, borderColor: CARD_COLOR }} />
+      <Divider sx={{ mb: 3, borderColor: 'secondary.main' }} />
 
       {/* Ship type */}
       <Box sx={cardSx}>
-        <Typography variant="h3" sx={{ color: 'white', fontWeight: 'bold' }}>
+        <Typography variant="h3" sx={{ color: 'secondary.contrastText', fontWeight: 'bold' }}>
           {strings.shipType}
         </Typography>
-        <Typography variant="body1" sx={{ color: 'white' }}>
+        <Typography variant="body1" sx={{ color: 'secondary.contrastText' }}>
           {shipDetails.type}
         </Typography>
       </Box>
 
       {/* Coordinates */}
       <Box sx={cardSx}>
-        <Typography variant="h3" sx={{ color: 'white', fontWeight: 'bold', mb: 2 }}>
+        <Typography variant="h3" sx={{ color: 'secondary.contrastText', fontWeight: 'bold', mb: 2 }}>
           {strings.last}:
         </Typography>
         <Typography
           variant="body2"
-          sx={{ color: 'white', fontFamily: 'monospace', mb: 1.5 }}
+          sx={{ color: 'secondary.contrastText', fontFamily: 'monospace', mb: 1.5 }}
         >
           {strings.latitude}: {shipDetails.lat}
         </Typography>
-        <Typography variant="body2" sx={{ color: 'white', fontFamily: 'monospace' }}>
+        <Typography variant="body2" sx={{ color: 'secondary.contrastText', fontFamily: 'monospace' }}>
           {strings.longitude}: {shipDetails.lng}
         </Typography>
       </Box>
@@ -85,11 +85,10 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
       <Box sx={{ display: 'flex', justifyContent: 'center' }}>
         <Button
           variant="contained"
+          color="secondary"
           startIcon={<RouteIcon />}
           onClick={handleDisplayRoute}
           sx={{
-            backgroundColor: CARD_COLOR,
-            '&:hover': { backgroundColor: '#0f172a' },
             fontWeight: 'bold',
             textTransform: 'none',
             borderRadius: '16px',
