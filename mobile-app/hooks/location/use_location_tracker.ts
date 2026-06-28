@@ -1,10 +1,20 @@
 import { useState, useCallback } from 'react';
 import * as Location from 'expo-location';
-import { locationTracker } from './location_tracker';
+import { locationTracker, BACKGROUND_LOCATION_TASK_NAME } from './location_tracker';
 
 export function useLocationTracker() {
   const [gpsActive, setGpsActive] = useState(false);
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
+
+  // Rechecks the real OS-level tracking status. Needed because tracking can
+  // be stopped from a different screen (e.g. switching boats in Settings),
+  // which this hook's local `gpsActive` state wouldn't otherwise know about.
+  const syncStatus = useCallback(async () => {
+    const isActive = await Location.hasStartedLocationUpdatesAsync(
+      BACKGROUND_LOCATION_TASK_NAME,
+    );
+    setGpsActive(isActive);
+  }, []);
 
   const toggleGPS = useCallback(
     async (isActive: boolean, shipId: string, userEmail: string, shipType: string) => {
@@ -26,5 +36,5 @@ export function useLocationTracker() {
     [],
   );
 
-  return { location, gpsActive, toggleGPS };
+  return { location, gpsActive, toggleGPS, syncStatus };
 }

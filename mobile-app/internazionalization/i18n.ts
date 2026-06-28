@@ -51,6 +51,16 @@ const translations = {
     accountCreatedTitle: 'Account created!',
     accountCreatedMessage: "We've sent you a confirmation email. Check your inbox.",
     googleConnectionError: 'A problem occurred when connecting with Google',
+    noShipTitle: 'No ship registered yet',
+    noShipDescription: 'Go to Settings to register your first ship and start tracking it.',
+    addNewShip: 'Add new ship',
+    newShipTitle: 'Register new ship',
+    registerShip: 'Register ship',
+    registering: 'Registering ship...',
+    locationPermissionError: 'Location permission is required to register a ship.',
+    registrationError: 'Could not register the ship. Please try again.',
+    myShips: 'My ships',
+    chooseShip: 'Choose a ship',
   },
   es: {
     longitude: 'Longitud',
@@ -105,6 +115,16 @@ const translations = {
     accountCreatedMessage:
       'Te hemos enviado un correo de confirmación. Revisa tu bandeja de entrada.',
     googleConnectionError: 'Se produjo un problema al conectar con Google',
+    noShipTitle: 'Aún no tienes un barco registrado',
+    noShipDescription: 'Ve a Ajustes para registrar tu primer barco y empezar a rastrearlo.',
+    addNewShip: 'Añadir barco nuevo',
+    newShipTitle: 'Registrar nuevo barco',
+    registerShip: 'Registrar barco',
+    registering: 'Registrando barco...',
+    locationPermissionError: 'Se necesita permiso de ubicación para registrar el barco.',
+    registrationError: 'No se pudo registrar el barco. Inténtalo de nuevo.',
+    myShips: 'Mis barcos',
+    chooseShip: 'Elige un barco',
   },
 };
 

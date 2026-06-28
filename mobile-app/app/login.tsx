@@ -24,9 +24,8 @@ export default function LoginScreen() {
 
   const { width } = useWindowDimensions();
   const isPhone = width <= 800;
-  const styles = globalStyles(isPhone);
+  const styles = globalStyles();
 
-  // Estados para el formulario
   const {
     email,
     setEmail,
@@ -82,9 +81,7 @@ export default function LoginScreen() {
         </View>
 
         {/* email and password*/}
-        <View
-          style={[styles.loginCards, showEmailError && styles.errorBorder]}
-        >
+        <View style={[styles.loginCards, showEmailError && styles.errorBorder]}>
           <TextInput
             style={[styles.text, { textAlign: 'center' }]}
             placeholder={strings.email}
@@ -97,9 +94,7 @@ export default function LoginScreen() {
           />
         </View>
 
-        <View
-          style={[styles.loginCards, showPasswordError && styles.errorBorder]}
-        >
+        <View style={[styles.loginCards, showPasswordError && styles.errorBorder]}>
           <TextInput
             style={[styles.text, { textAlign: 'center' }]}
             placeholder={strings.password}

@@ -1,202 +1,120 @@
-import {
-  Text,
-  View,
-  Switch,
-  TextInput,
-  ScrollView,
-  useWindowDimensions,
-} from 'react-native';
-import { Dropdown } from 'react-native-element-dropdown';
+import { Text, View, Switch, ScrollView } from 'react-native';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 
 import globalStyles, { COLORS } from '../styles';
 import useLanguage from '../../internazionalization/languageContext';
 import translations from '../../internazionalization/i18n';
-
-import { useEffect, useState } from 'react';
 import LanguageSelector from '@/components/languageSelector';
-import OwnershipVerificationModal from '@/components/ownershipVerificationModal';
 import { useLocationTracker } from '@/hooks/location/use_location_tracker';
-import { useAutoDismiss } from '@/hooks/use_auto_dismiss';
 import { supabase } from '@/supabaseClient';
-import { mainServerService } from '@/services/mainServerService';
+import { mainServerService, ShipSummary } from '@/services/mainServerService';
+import useSelectedShip from '@/hooks/selectedShipContext';
 
 export default function DashboardScreen() {
-  const { width } = useWindowDimensions();
-  const isPhone = width <= 800;
-
   let { lang } = useLanguage();
   let strings = translations[lang];
 
-  const { location, gpsActive, toggleGPS } = useLocationTracker();
+  const { location, gpsActive, toggleGPS, syncStatus } = useLocationTracker();
+  const { selectedShipId } = useSelectedShip();
 
-  const [shipId, setShipId] = useState<string | null>(null);
+  const [ship, setShip] = useState<ShipSummary | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [lastKnownCoords, setLastKnownCoords] = useState<{
-    longitude: number;
-    latitude: number;
-  } | null>(null);
-  const styles = globalStyles(isPhone);
+  const [loadingShip, setLoadingShip] = useState(true);
+  const styles = globalStyles();
 
-  const displayCoords = location?.coords ?? lastKnownCoords;
+  const displayCoords =
+    location?.coords ?? (ship ? { longitude: ship.lng, latitude: ship.lat } : null);
   const coordinatesType = gpsActive ? 'current' : displayCoords ? 'last' : null;
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUserEmail(session?.user?.email ?? null);
-    });
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      syncStatus();
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setUserEmail(session?.user?.email ?? null);
+      });
+    }, [syncStatus]),
+  );
 
-  useEffect(() => {
-    if (!userEmail) return;
-    mainServerService.getShipDetails(userEmail).then((data) => {
-      if (data) {
-        setShipId(data.ship_id);
-        setSelectedType(data.type);
-        setLastKnownCoords({ longitude: data.lng, latitude: data.lat });
+  useFocusEffect(
+    useCallback(() => {
+      if (!userEmail || !selectedShipId) {
+        setShip(null);
+        setLoadingShip(false);
+        return;
       }
-    });
-  }, [userEmail]);
-
-  const SHIP_TYPES = [
-    { label: strings.cargo, value: 'cargo' },
-    { label: strings.tanker, value: 'tanker' },
-    { label: strings.cruise, value: 'cruise' },
-    { label: strings.fishing, value: 'fishing' },
-    { label: strings.yacht, value: 'yacht' },
-    { label: strings.military, value: 'military' },
-    { label: strings.tug, value: 'tug' },
-    { label: strings.boat, value: 'boat' },
-    { label: strings.other, value: 'other' },
-  ];
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [isFocus, setIsFocus] = useState(false);
-  const [showOwnershipModal, setShowOwnershipModal] = useState(false);
-  const [showTypeError, setShowTypeError] = useState(false);
-  const [showShipIdError, setShowShipIdError] = useState(false);
+      setLoadingShip(true);
+      mainServerService.getShipsByOwner(userEmail).then((ships) => {
+        setShip(ships.find((s) => s.id === selectedShipId) ?? null);
+        setLoadingShip(false);
+      });
+    }, [userEmail, selectedShipId]),
+  );
 
   const enableTracking = () => {
-    if (!userEmail) return;
-    toggleGPS(true, shipId!, userEmail, selectedType!);
+    if (!userEmail || !ship) return;
+    toggleGPS(true, ship.id, userEmail, ship.type);
   };
-
-  useAutoDismiss(showTypeError, setShowTypeError);
-  useAutoDismiss(showShipIdError, setShowShipIdError);
 
   return (
     <ScrollView style={styles.scrollContainer}>
       <View style={styles.screenContainer}>
         <LanguageSelector></LanguageSelector>
-        <View
-          style={[styles.boatCard, showShipIdError && styles.errorBorder]}
-        >
-          <TextInput
-            style={styles.title}
-            value={shipId ?? ''}
-            onChangeText={(text) => {
-              setShipId(text);
-              setShowShipIdError(false);
-            }}
-            placeholder={strings.shipId}
-            placeholderTextColor={COLORS.placeholder}
-            selectTextOnFocus={true}
-          />
-        </View>
 
-        <Dropdown
-          style={[
-            styles.boatCard,
-            isFocus && { borderColor: COLORS.text, borderWidth: 2 },
-            showTypeError && styles.errorBorder,
-          ]}
-          placeholder={strings.chooseType}
-          placeholderStyle={styles.text}
-          searchPlaceholderTextColor={COLORS.placeholder}
-          containerStyle={styles.dropdownContainer}
-          selectedTextStyle={styles.text}
-          itemTextStyle={styles.text}
-          data={SHIP_TYPES}
-          onChange={(item) => {
-            setSelectedType(item.value);
-            setShowTypeError(false);
-          }}
-          labelField="label"
-          valueField="value"
-          value={selectedType}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-        ></Dropdown>
-
-        {coordinatesType != null && (
+        {!loadingShip && !ship && (
           <View style={styles.boatCard}>
-            <Text style={styles.secondTitle}>
-              {coordinatesType === 'current' ? strings.current : strings.last}
-            </Text>
-            <Text style={styles.text}>
-              {strings.longitude}: {displayCoords?.longitude}
-            </Text>
-            <Text style={styles.text}>
-              {strings.latitude}: {displayCoords?.latitude}
-            </Text>
+            <Text style={styles.secondTitle}>{strings.noShipTitle}</Text>
+            <Text style={styles.text}>{strings.noShipDescription}</Text>
           </View>
         )}
 
-        <View style={[styles.boatCard, { flexDirection: 'row' }]}>
-          <Text style={styles.text}>
-            {gpsActive ? `🟢 ${strings.transmitting}` : `🔴 ${strings.notTransmitting}`}
-          </Text>
+        {ship && (
+          <>
+            <View style={styles.boatCard}>
+              <Text style={styles.title}>{ship.id}</Text>
+              <Text style={styles.text}>
+                {strings[ship.type as keyof typeof strings] || ship.type}
+              </Text>
+            </View>
 
-          <Switch
-            trackColor={{ false: '#D1D5DB', true: '#00e0b7' }}
-            thumbColor={COLORS.background}
-            onValueChange={(value) => {
-              if (!userEmail) {
-                console.warn('No authenticated user email available, cannot toggle GPS');
-                return;
-              }
+            {coordinatesType != null && (
+              <View style={styles.boatCard}>
+                <Text style={styles.secondTitle}>
+                  {coordinatesType === 'current' ? strings.current : strings.last}
+                </Text>
+                <Text style={styles.text}>
+                  {strings.longitude}: {displayCoords?.longitude}
+                </Text>
+                <Text style={styles.text}>
+                  {strings.latitude}: {displayCoords?.latitude}
+                </Text>
+              </View>
+            )}
 
-              if (!value) {
-                toggleGPS(
-                  false,
-                  shipId || 'Barco_Prueba',
-                  userEmail,
-                  selectedType || 'other',
-                );
-                return;
-              }
+            <View style={[styles.boatCard, { flexDirection: 'row' }]}>
+              <Text style={styles.text}>
+                {gpsActive ? `🟢 ${strings.transmitting}` : `🔴 ${strings.notTransmitting}`}
+              </Text>
 
-              if (!shipId) {
-                setShowShipIdError(true);
-                return;
-              }
+              <Switch
+                trackColor={{ false: '#D1D5DB', true: '#00e0b7' }}
+                thumbColor={COLORS.background}
+                onValueChange={(value) => {
+                  if (!userEmail || !ship) return;
 
-              if (!selectedType) {
-                setShowTypeError(true);
-                return;
-              }
-
-              mainServerService
-                .isShipRegistered(shipId!, userEmail)
-                .then((registered) => {
-                  if (registered) {
-                    enableTracking();
-                  } else {
-                    setShowOwnershipModal(true);
+                  if (!value) {
+                    toggleGPS(false, ship.id, userEmail, ship.type);
+                    return;
                   }
-                });
-            }}
-            value={gpsActive}
-          />
-        </View>
+
+                  enableTracking();
+                }}
+                value={gpsActive}
+              />
+            </View>
+          </>
+        )}
       </View>
-      <OwnershipVerificationModal
-        visible={showOwnershipModal}
-        shipId={shipId || 'Barco_Prueba'}
-        onCancel={() => setShowOwnershipModal(false)}
-        onVerified={() => {
-          setShowOwnershipModal(false);
-          enableTracking();
-        }}
-      />
     </ScrollView>
   );
 }
