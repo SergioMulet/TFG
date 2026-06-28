@@ -299,3 +299,108 @@ func GetShipDetailsByOwner(c *gin.Context) {
 
 	c.JSON(http.StatusOK, details)
 }
+
+// fetchShipsByOwner returns the latest known position/type for every
+// distinct ship_id ever reported under the given owner_email.
+func fetchShipsByOwner(ownerEmail string) ([]ShipData, error) {
+	org := os.Getenv("INFLUX_ORG")
+	bucket := os.Getenv("INFLUX_BUCKET")
+	queryAPI := repositories.Infra.Influx.QueryAPI(org)
+
+	fluxQuery := fmt.Sprintf(`
+		from(bucket: "%s")
+			|> range(start: -100y)
+			|> filter(fn: (r) => r["_measurement"] == "boat_telemetry")
+			|> filter(fn: (r) => r["owner_email"] == "%s")
+			|> filter(fn: (r) => r["_field"] == "latitude" or r["_field"] == "longitude")
+			|> last()
+			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+	`, bucket, escapeFluxString(ownerEmail))
+
+	result, err := queryAPI.Query(context.Background(), fluxQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer result.Close()
+
+	vesselsMap := make(map[string]*ShipData)
+	latestTime := make(map[string]time.Time)
+
+	for result.Next() {
+		record := result.Record()
+
+		shipId, ok := record.ValueByKey("ship_id").(string)
+		if !ok || shipId == "" {
+			continue
+		}
+
+		recordTime := record.Time()
+		if seen, ok := latestTime[shipId]; ok && !recordTime.After(seen) {
+			continue
+		}
+		latestTime[shipId] = recordTime
+
+		lat, _ := record.ValueByKey("latitude").(float64)
+		lng, _ := record.ValueByKey("longitude").(float64)
+		shipType, _ := record.ValueByKey("ship_type").(string)
+		if shipType == "" {
+			shipType = "other"
+		}
+
+		vesselsMap[shipId] = &ShipData{ID: shipId, Lat: lat, Lng: lng, Type: shipType}
+	}
+
+	var ships []ShipData
+	for _, v := range vesselsMap {
+		ships = append(ships, *v)
+	}
+
+	return ships, nil
+}
+
+// GetShipsByOwner lists every ship ever registered by the given owner_email.
+func GetShipsByOwner(c *gin.Context) {
+	email := c.Param("email")
+	if email == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "email param is required"})
+		return
+	}
+
+	ships, err := fetchShipsByOwner(email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, ships)
+}
+
+// DeleteShip permanently erases all telemetry recorded for the given
+// (ship_id, owner_email) pair.
+func DeleteShip(c *gin.Context) {
+	shipId := c.Param("id")
+	ownerEmail := c.Query("owner_email")
+	if shipId == "" || ownerEmail == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ship id and owner_email are required"})
+		return
+	}
+
+	org := os.Getenv("INFLUX_ORG")
+	bucket := os.Getenv("INFLUX_BUCKET")
+	deleteAPI := repositories.Infra.Influx.DeleteAPI()
+
+	predicate := fmt.Sprintf(
+		`_measurement="boat_telemetry" and ship_id="%s" and owner_email="%s"`,
+		escapeFluxString(shipId), escapeFluxString(ownerEmail),
+	)
+
+	start := time.Unix(0, 0)
+	stop := time.Now()
+	if err := deleteAPI.DeleteWithName(context.Background(), org, bucket, start, stop, predicate); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	BroadcastShips()
+	c.JSON(http.StatusOK, gin.H{"status": "deleted"})
+}
