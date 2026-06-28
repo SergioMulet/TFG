@@ -103,7 +103,7 @@ func fetchShips() ([]ShipData, error) {
 		}
 	}
 
-	var ships []ShipData
+	ships := []ShipData{}
 	for _, v := range vesselsMap {
 		ships = append(ships, *v)
 	}
@@ -350,7 +350,7 @@ func fetchShipsByOwner(ownerEmail string) ([]ShipData, error) {
 		vesselsMap[shipId] = &ShipData{ID: shipId, Lat: lat, Lng: lng, Type: shipType}
 	}
 
-	var ships []ShipData
+	ships := []ShipData{}
 	for _, v := range vesselsMap {
 		ships = append(ships, *v)
 	}

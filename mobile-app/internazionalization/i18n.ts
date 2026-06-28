@@ -6,7 +6,6 @@ const translations = {
     last: 'Last coordinates',
     notTransmitting: 'Tracking disabled',
     transmitting: 'Sending coordinates',
-    changeLanguage: 'Cambiar al español',
     chooseType: 'Choose ship type',
     shipId: 'Ship ID',
     cargo: 'Cargo',
@@ -61,6 +60,10 @@ const translations = {
     registrationError: 'Could not register the ship. Please try again.',
     myShips: 'My ships',
     chooseShip: 'Choose a ship',
+    deleteShipTitle: 'Delete ship?',
+    deleteShipMessage: 'The ship will be permanently deleted from the system.',
+    delete: 'Delete',
+    duplicateShipError: 'You already have a ship with this ID.',
   },
   es: {
     longitude: 'Longitud',
@@ -69,7 +72,6 @@ const translations = {
     last: 'Últimas coordenadas',
     notTransmitting: 'Seguimiento desactivado',
     transmitting: 'Enviando coordenadas',
-    changeLanguage: 'Switch to English',
     chooseType: 'Selecciona el tipo de barco',
     shipId: 'ID del barco',
     cargo: 'Carga',
@@ -125,6 +127,10 @@ const translations = {
     registrationError: 'No se pudo registrar el barco. Inténtalo de nuevo.',
     myShips: 'Mis barcos',
     chooseShip: 'Elige un barco',
+    deleteShipTitle: '¿Eliminar barco?',
+    deleteShipMessage: 'El barco se eliminará permanentemente del sistema.',
+    delete: 'Eliminar',
+    duplicateShipError: 'Ya tienes un barco con este ID.',
   },
 };
 

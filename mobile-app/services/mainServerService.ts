@@ -57,7 +57,8 @@ class MainServerService {
       );
       if (!response.ok) return [];
 
-      return await response.json();
+      const data = await response.json();
+      return data ?? [];
     } catch (error) {
       console.error('Error fetching ships list: ', error);
       return [];

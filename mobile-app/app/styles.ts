@@ -30,6 +30,7 @@ const globalStyles = () =>
       borderColor: '#071D64',
       borderRadius: 15,
       borderWidth: 1,
+      overflow: 'hidden',
     },
 
     errorBorder: {
@@ -56,11 +57,22 @@ const globalStyles = () =>
       opacity: 0.4,
     },
 
+    deleteButton: {
+      backgroundColor: COLORS.red,
+      borderColor: COLORS.border,
+      borderRadius: 15,
+      borderWidth: 1,
+      padding: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+
     boatCard: {
       backgroundColor: COLORS.cardBackground,
       borderColor: COLORS.border,
       borderRadius: 15,
       borderWidth: 1,
+      overflow: 'hidden',
 
       padding: '5%',
       width: '100%',

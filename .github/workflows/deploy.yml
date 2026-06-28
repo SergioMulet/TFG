@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 jobs:
-  deploy:
+  deploy-backend:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy via SSH
@@ -19,3 +19,50 @@ jobs:
             git pull origin main
             cd main-server
             docker compose up -d --build
+
+  deploy-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: web-application
+        run: npm ci
+
+      - name: Build
+        working-directory: web-application
+        run: npm run build
+
+      # The VM is too resource-constrained to build the web app itself, so
+      # it's built here on the runner and only the static dist/ output is
+      # shipped over. Lands in the SSH user's home dir first since it has
+      # no write access to /var/www/html.
+      - name: Upload dist to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          source: 'web-application/dist/*'
+          target: '/home/${{ secrets.VM_USER }}/dist_new'
+          strip_components: 2
+          overwrite: true
+
+      - name: Publish to Nginx
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            sudo rm -rf /var/www/html/*
+            sudo cp -r ~/dist_new/* /var/www/html/
+            rm -rf ~/dist_new
+            sudo chown -R www-data:www-data /var/www/html
+            sudo systemctl restart nginx
