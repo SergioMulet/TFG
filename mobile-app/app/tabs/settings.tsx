@@ -3,7 +3,7 @@ import {
   ScrollView,
   View,
   Text,
-  useWindowDimensions,
+  Alert,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
@@ -23,8 +23,6 @@ import useSelectedShip from '@/hooks/selectedShipContext';
 import { locationTracker } from '@/hooks/location/location_tracker';
 
 export default function SettingsScreen() {
-  const { width } = useWindowDimensions();
-  const isPhone = width <= 800;
   const styles = globalStyles();
   const router = useRouter();
 
@@ -59,19 +57,28 @@ export default function SettingsScreen() {
     setSelectedShipId(shipId);
   };
 
-  const handleDeleteShip = async () => {
+  const deleteSelectedShip = async () => {
     if (!selectedShipId || !userEmail) return;
     setIsDeleting(true);
     try {
       await locationTracker.stopTracking();
       const success = await mainServerService.deleteShip(selectedShipId, userEmail);
       if (success) {
-        setShips((prev) => prev.filter((s) => s.id !== selectedShipId));
-        setSelectedShipId(null);
+        const remaining = ships.filter((s) => s.id !== selectedShipId);
+        setShips(remaining);
+        setSelectedShipId(remaining.length > 0 ? remaining[0].id : null);
       }
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleDeleteShip = () => {
+    if (!selectedShipId) return;
+    Alert.alert(strings.deleteShipTitle, strings.deleteShipMessage, [
+      { text: strings.cancel, style: 'cancel' },
+      { text: strings.delete, style: 'destructive', onPress: deleteSelectedShip },
+    ]);
   };
 
   const handleSignOut = async () => {
@@ -81,60 +88,66 @@ export default function SettingsScreen() {
   const shipOptions = ships.map((s) => ({ label: s.id, value: s.id }));
 
   return (
-    <ScrollView style={styles.scrollContainer} contentContainerStyle={{ flex: 1 }}>
-      <View style={[styles.screenContainer, { flex: 1, justifyContent: 'space-around' }]}>
-        <Text style={styles.title}>{strings.settingsTab}</Text>
-        <View style={[styles.boatCard]}>
-          <Text style={styles.secondTitle}>{strings.changeLanguage}</Text>
-          <LanguageSelector variant="big"></LanguageSelector>
-        </View>
+    <ScrollView style={styles.scrollContainer}>
+      <View style={[styles.screenContainer, { justifyContent: 'flex-start' }]}>
+        <LanguageSelector></LanguageSelector>
 
-        {ships.length > 0 && (
-          <View style={[styles.boatCard]}>
-            <Text style={styles.secondTitle}>{strings.myShips}</Text>
+        <View style={styles.boatCard}>
+          <Text style={styles.secondTitle}>{strings.myShips}</Text>
+
+          {ships.length > 0 && (
             <View
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 width: '100%',
                 gap: 12,
+                marginBottom: 16,
               }}
             >
-              <Dropdown
-                style={[styles.boatCard, { flex: 1, width: undefined, margin: 0 }]}
-                placeholder={strings.chooseShip}
-                placeholderStyle={styles.text}
-                containerStyle={styles.dropdownContainer}
-                selectedTextStyle={styles.text}
-                itemTextStyle={styles.text}
-                data={shipOptions}
-                labelField="label"
-                valueField="value"
-                value={selectedShipId}
-                onChange={(item) => handleSelectShip(item.value)}
-              />
+              <View style={{ flex: 1 }}>
+                <Dropdown
+                  style={styles.boatCard}
+                  placeholder={strings.chooseShip}
+                  placeholderStyle={styles.text}
+                  containerStyle={styles.dropdownContainer}
+                  activeColor={COLORS.cardBackground}
+                  selectedTextStyle={styles.text}
+                  itemTextStyle={styles.text}
+                  data={shipOptions}
+                  labelField="label"
+                  valueField="value"
+                  value={selectedShipId}
+                  onChange={(item) => handleSelectShip(item.value)}
+                />
+              </View>
 
               <TouchableOpacity
                 onPress={handleDeleteShip}
                 disabled={!selectedShipId || isDeleting}
-                style={{ opacity: !selectedShipId || isDeleting ? 0.4 : 1, padding: 8 }}
+                style={[
+                  styles.deleteButton,
+                  (!selectedShipId || isDeleting) && styles.disabledButton,
+                ]}
               >
                 {isDeleting ? (
-                  <ActivityIndicator color={COLORS.red} />
+                  <ActivityIndicator color={COLORS.background} />
                 ) : (
-                  <Ionicons name="trash-outline" size={28} color={COLORS.red} />
+                  <Ionicons name="trash-outline" size={24} color={COLORS.background} />
                 )}
               </TouchableOpacity>
             </View>
-          </View>
-        )}
+          )}
 
-        <TouchableOpacity
-          style={[styles.secondaryButton]}
-          onPress={() => router.push('/tabs/newShip')}
-        >
-          <Text style={[styles.text, { fontWeight: 'bold' }]}>{strings.addNewShip}</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.loginButton, { width: '100%', margin: 0 }]}
+            onPress={() => router.push('/tabs/newShip')}
+          >
+            <Text style={[styles.text, { color: COLORS.background, fontWeight: 'bold' }]}>
+              {strings.addNewShip}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity style={[styles.signOutButton]} onPress={handleSignOut}>
           <Text style={[styles.text, { fontWeight: 'bold' }]}>{strings.signOut}</Text>

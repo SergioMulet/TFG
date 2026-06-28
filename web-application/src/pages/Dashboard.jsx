@@ -14,6 +14,7 @@ import Sidebar from '../components/Sidebar';
 import Map from '../components/Map';
 import LanguageSelector from '../components/LanguageSelector';
 import SearchBar from '../components/SearchBar';
+import TotalShips from '../components/TotalShips';
 import AdminPage from '../components/AdminPage';
 import { shipLoader } from '../services/shipLoader';
 import { SHIP_TYPE_KEYS } from '../shipTypes';
@@ -52,11 +53,12 @@ export default function Dashboard() {
             ⚓ Ships tracker
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
+          {view === 'map' && <TotalShips ships={ships} />}
           {view === 'map' && <SearchBar ships={ships} onSelectShip={setSelectedShipId} />}
           <Tooltip title={view === 'map' ? 'Admin view' : 'Back to map'}>
             <IconButton
               onClick={() => setView(view === 'map' ? 'admin' : 'map')}
-              sx={{ color: 'white' }}
+              sx={{ color: 'accent.main' }}
             >
               {view === 'map' ? <AdminPanelSettingsIcon /> : <ArrowBackIcon />}
             </IconButton>
