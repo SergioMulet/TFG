@@ -9,6 +9,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/components/useColorScheme';
 import '@/hooks/location/background_location_task';
 import { LanguageProvider } from '../internazionalization/languageContext';
+import { SelectedShipProvider } from '../hooks/selectedShipContext';
 import { supabase } from '../supabaseClient';
 
 export { ErrorBoundary } from 'expo-router';
@@ -84,9 +85,11 @@ function RootLayoutNav() {
 
   return (
     <LanguageProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Slot />
-      </ThemeProvider>
+      <SelectedShipProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Slot />
+        </ThemeProvider>
+      </SelectedShipProvider>
     </LanguageProvider>
   );
 }

@@ -40,6 +40,7 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen name="newShip" options={{ href: null }} />
     </Tabs>
   );
 }

@@ -9,7 +9,7 @@ export const COLORS = {
   red: '#F79797',
 };
 
-const globalStyles = (isPhone: boolean) =>
+const globalStyles = () =>
   StyleSheet.create({
     scrollContainer: {
       flex: 1,
@@ -20,8 +20,8 @@ const globalStyles = (isPhone: boolean) =>
       backgroundColor: COLORS.background,
       justifyContent: 'center',
       alignItems: 'center',
-      marginHorizontal: isPhone ? 0 : '25%',
-      marginTop: isPhone ? '20%' : 0,
+      marginHorizontal: 0,
+      marginTop: '20%',
       padding: 20,
     },
 
@@ -35,6 +35,25 @@ const globalStyles = (isPhone: boolean) =>
     errorBorder: {
       borderColor: COLORS.red,
       borderWidth: 4,
+    },
+
+    secondaryButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      backgroundColor: COLORS.cardBackground,
+      borderColor: COLORS.border,
+      borderRadius: 15,
+      borderWidth: 1,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      width: '100%',
+      margin: '5%',
+    },
+
+    disabledButton: {
+      opacity: 0.4,
     },
 
     boatCard: {
@@ -136,7 +155,6 @@ const globalStyles = (isPhone: boolean) =>
       justifyContent: 'center',
       flexDirection: 'row',
       gap: '5%',
-      //paddingVertical: 12,
     },
 
     googleText: {
