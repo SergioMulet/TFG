@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import React from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import { Box, useTheme } from '@mui/material';
 import L from 'leaflet';
-import 'leaflet-polylinedecorator';
 
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -20,37 +19,23 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const routePointIcon = L.divIcon({
-  html: '<div style="font-size: 18px; line-height: 1;">🚢</div>',
-  className: 'route-point-marker',
-  iconSize: [20, 20],
-  iconAnchor: [10, 10],
-});
+const ROUTE_MIN_OPACITY = 0.2;
 
-function RouteDirectionArrows({ positions, color }) {
-  const map = useMap();
+// Splits a route into per-segment polylines whose opacity fades from faint
+// (oldest) to solid (most recent), so the trail itself conveys direction and
+// recency without needing separate arrow decorations or a marker per point.
+function buildRouteSegments(positions) {
+  const lastIndex = positions.length - 2;
+  if (lastIndex < 0) return [];
 
-  useEffect(() => {
-    if (positions.length < 2) return;
-
-    const decorator = L.polylineDecorator(positions, {
-      patterns: [
-        {
-          offset: 25,
-          repeat: 80,
-          symbol: L.Symbol.arrowHead({
-            pixelSize: 10,
-            polygon: false,
-            pathOptions: { color, weight: 2 },
-          }),
-        },
-      ],
-    }).addTo(map);
-
-    return () => decorator.remove();
-  }, [map, positions, color]);
-
-  return null;
+  return positions.slice(0, -1).map((position, index) => {
+    const progress = lastIndex === 0 ? 1 : index / lastIndex;
+    return {
+      key: `route-segment-${index}`,
+      positions: [position, positions[index + 1]],
+      opacity: ROUTE_MIN_OPACITY + (1 - ROUTE_MIN_OPACITY) * progress,
+    };
+  });
 }
 
 export default function Map({ selectedShipId, onSelectShip, ships, route, selectedTypes }) {
@@ -68,6 +53,12 @@ export default function Map({ selectedShipId, onSelectShip, ships, route, select
 
   const routePoints = (route || []).map((coord) => [coord.lat, coord.lng]);
   const isShowingRoute = routePoints.length > 0;
+  const routeSegments = buildRouteSegments(routePoints);
+
+  const selectedShip = selectedShipId
+    ? realShips.find((ship) => ship.id === selectedShipId)
+    : null;
+  const routeColor = SHIP_CONFIG[selectedShip?.type]?.color || theme.palette.primary.main;
 
   return (
     <Box sx={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -79,36 +70,30 @@ export default function Map({ selectedShipId, onSelectShip, ships, route, select
         style={{ width: '100%', height: '100%' }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
           maxZoom={19}
         />
 
         {/* Route */}
-        {routePoints.length > 1 && (
-          <>
-            <Polyline
-              positions={routePoints}
-              pathOptions={{
-                color: theme.palette.route.main,
-                weight: 2,
-                dashArray: '6, 8',
-              }}
-            />
-            <RouteDirectionArrows
-              positions={routePoints}
-              color={theme.palette.route.main}
-            />
-          </>
-        )}
-
-        {routePoints.map((position, index) => (
-          <Marker
-            key={`route-point-${index}`}
-            position={position}
-            icon={routePointIcon}
+        {routeSegments.map((segment) => (
+          <Polyline
+            key={segment.key}
+            positions={segment.positions}
+            pathOptions={{
+              color: routeColor,
+              weight: 4,
+              opacity: segment.opacity,
+            }}
           />
         ))}
+
+        {isShowingRoute && (
+          <Marker
+            position={routePoints[routePoints.length - 1]}
+            icon={createLeafletShipIcon(routeColor)}
+          />
+        )}
 
         {/* Markers */}
         {!isShowingRoute &&
