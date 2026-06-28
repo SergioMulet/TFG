@@ -1,20 +1,8 @@
-import React, { useState } from 'react';
-import {
-  Typography,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  IconButton,
-  Box,
-  Divider,
-  Checkbox,
-  Tooltip,
-  Link,
-} from '@mui/material';
+import React from 'react';
+import { useTheme, useMediaQuery } from '@mui/material';
 
 import FilterSidebar from './FilterSidebar';
+import FiltersMobile from './FiltersMobile';
 import DetailsSidebar from './DetailsSidebar';
 
 export default function Sidebar({
@@ -24,8 +12,15 @@ export default function Sidebar({
   selectedTypes,
   setSelectedTypes,
 }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   if (selectedShipId === null) {
-    return <FilterSidebar selectedTypes={selectedTypes} setSelectedTypes={setSelectedTypes} />;
+    return isMobile ? (
+      <FiltersMobile selectedTypes={selectedTypes} setSelectedTypes={setSelectedTypes} />
+    ) : (
+      <FilterSidebar selectedTypes={selectedTypes} setSelectedTypes={setSelectedTypes} />
+    );
   }
 
   return (

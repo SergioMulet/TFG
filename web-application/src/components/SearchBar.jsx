@@ -40,7 +40,7 @@ export default function SearchBar({ ships, onSelectShip }) {
   const showDropdown = isFocused && query.trim().length > 0;
 
   return (
-    <Box sx={{ position: 'relative', width: 280 }}>
+    <Box sx={{ position: 'relative', width: { xs: 170, sm: 280 } }}>
       <TextField
         size="small"
         fullWidth

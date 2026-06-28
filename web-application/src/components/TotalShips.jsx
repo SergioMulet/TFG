@@ -8,7 +8,11 @@ export default function TotalShips({ ships }) {
   const strings = translations[lang];
 
   return (
-    <Typography variant="body1" noWrap sx={{ color: 'accent.main' }}>
+    <Typography
+      variant="body1"
+      noWrap
+      sx={{ color: 'accent.main', fontSize: { xs: '0.8rem', sm: '1rem' } }}
+    >
       {strings.totalShips}: {ships.length}
     </Typography>
   );
