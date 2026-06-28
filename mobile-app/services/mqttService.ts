@@ -2,7 +2,7 @@ import mqtt from 'mqtt';
 
 class MqttService {
   private client: mqtt.MqttClient | null = null;
-  private brokerUrl = 'ws://192.168.1.132:9001';
+  private brokerUrl = process.env.EXPO_PUBLIC_BROKER_URL;
 
   constructor() {}
 
@@ -10,7 +10,7 @@ class MqttService {
     if (this.client?.connected || this.client?.reconnecting) return;
     console.log('--- [MQTT] Trying to connect to mosquito broker... ---');
 
-    this.client = mqtt.connect(this.brokerUrl, {
+    this.client = mqtt.connect(this.brokerUrl!, {
       clientId: `mobile_app_${Math.random().toString(16).substr(2, 8)}`,
       clean: true,
       connectTimeout: 4000,
@@ -71,7 +71,9 @@ class MqttService {
     const client = this.client;
     return new Promise((resolve) => {
       const timeout = setTimeout(() => {
-        console.warn('--- [MQTT] Publish not acknowledged in time, treating as failed ---');
+        console.warn(
+          '--- [MQTT] Publish not acknowledged in time, treating as failed ---',
+        );
         resolve(false);
       }, ackTimeoutMs);
 

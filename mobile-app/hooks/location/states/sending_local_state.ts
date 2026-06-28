@@ -3,6 +3,7 @@ import { LocationObject } from 'expo-location';
 import { TrackerState } from '../tracker_state';
 import { sqliteService } from '@/services/sqliteService';
 import { authContextManager } from '@/services/auth/authContext';
+import { API_URL } from '@/services/mainServerService';
 
 export class SendingLocalState implements TrackerState {
   saveCoordinates(location: LocationObject, shipId: string, userEmail: string, shipType: string): void {
@@ -30,7 +31,7 @@ export class SendingLocalState implements TrackerState {
       }
 
       // HTTP request to mian server
-      const response = await fetch('http://192.168.1.132:8080/api/telemetry/sync', {
+      const response = await fetch(`${API_URL}/telemetry/sync`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
