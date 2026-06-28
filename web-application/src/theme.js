@@ -5,7 +5,6 @@ const COLORS = {
   secondary: '#1e293b',
   secondaryDark: '#0f172a',
   accent: '#b8ebff',
-  route: '#ef4444',
   divider: '#e0e0e0',
   backgroundDefault: '#f8fafc',
   backgroundPaper: '#ffffff',
@@ -24,9 +23,6 @@ const theme = createTheme({
     },
     accent: {
       main: COLORS.accent,
-    },
-    route: {
-      main: COLORS.route,
     },
     divider: COLORS.divider,
     background: {
