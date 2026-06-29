@@ -31,19 +31,23 @@ func main() {
 		c.JSON(200, gin.H{"status": "up", "message": "Backend running perfectly"})
 	})
 
-	// routes
-	api := router.Group("/api")
-	api.Use(middleware.AuthMiddleWare(repositories.Infra.Supabase))
+	// Ship browsing/positions are intentionally public (the web dashboard has
+	// no auth of its own); only the offline-sync endpoint requires a logged-in user.
+	public := router.Group("/api")
 	{
-		api.POST("/telemetry/sync", handlers.SyncOfflineTelemetry)
+		public.GET("/ships", handlers.GetShips)
+		public.GET("/ships/registered", handlers.IsShipRegistered)
+		public.GET("/ships/:id", handlers.GetShipDetails)
+		public.DELETE("/ships/:id", handlers.DeleteShip)
+		public.GET("/ships/owner/:email/list", handlers.GetShipsByOwner)
 	}
 
-	router.GET("/api/ships", handlers.GetShips)
-	router.GET("/api/ships/registered", handlers.IsShipRegistered)
-	router.GET("/api/ships/:id", handlers.GetShipDetails)
-	router.DELETE("/api/ships/:id", handlers.DeleteShip)
-	router.GET("/api/ships/owner/:email", handlers.GetShipDetailsByOwner)
-	router.GET("/api/ships/owner/:email/list", handlers.GetShipsByOwner)
+	protected := router.Group("/api")
+	protected.Use(middleware.AuthMiddleWare(repositories.Infra.Supabase))
+	{
+		protected.POST("/telemetry/sync", handlers.SyncOfflineTelemetry)
+	}
+
 	router.GET("/ws/ships", handlers.ShipsWebSocket)
 
 	// deploy server
