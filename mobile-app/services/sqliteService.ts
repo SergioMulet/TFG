@@ -21,8 +21,8 @@ class SqliteService {
         );
             `);
     } catch (error) {
-      console.error('Error while initializing SQLiteDB, trying again...');
-      await this.initDB();
+      console.error('Error while initializing SQLiteDB: ', error);
+      this.db = null;
     }
   }
 

@@ -1,7 +1,8 @@
 import { LocationObject } from 'expo-location';
-import { TrackerState } from '../tracker_state';
+import { TrackerState } from '../trackerState';
 import { mqttService } from '@/services/mqttService';
 import { sqliteService } from '@/services/sqliteService';
+import { toastService } from '@/services/toastService';
 
 export class SendingState implements TrackerState {
   private topic: string = '';
@@ -37,6 +38,7 @@ export class SendingState implements TrackerState {
       if (!success) {
         console.log('MQTT connection lost, switching to local state...');
         context.setTrackerState(context.getSendingLocalState());
+        toastService.show('savingLocally');
 
         await sqliteService.saveCoordinate(
           this.telemetryPayload.ship_id,

@@ -6,11 +6,12 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/components/useColorScheme';
-import '@/hooks/location/background_location_task';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import '@/services/location/backgroundLocationTask';
+import ToastHost from '@/components/toastHost';
 import { LanguageProvider } from '../internazionalization/languageContext';
 import { SelectedShipProvider } from '../hooks/selectedShipContext';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../services/supabaseClient';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -88,6 +89,7 @@ function RootLayoutNav() {
       <SelectedShipProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Slot />
+          <ToastHost />
         </ThemeProvider>
       </SelectedShipProvider>
     </LanguageProvider>

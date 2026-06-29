@@ -1,9 +1,11 @@
 import * as Location from 'expo-location';
+import { AppState, AppStateStatus } from 'react-native';
 import { mqttService } from '@/services/mqttService';
-import { TrackerState } from './tracker_state';
-import { NotSendingState } from './states/not_sending_state';
-import { SendingLocalState } from './states/sending_local_state';
-import { SendingState } from './states/sending_state';
+import { toastService } from '@/services/toastService';
+import { TrackerState } from './trackerState';
+import { NotSendingState } from './states/notSendingState';
+import { SendingLocalState } from './states/sendingLocalState';
+import { SendingState } from './states/sendingState';
 
 const TRACKING_INTERVAL_MS = 30000;
 const TRACKING_DISTANCE_INTERVAL_M = 50;
@@ -25,6 +27,18 @@ export class LocationTracker {
   private shipType = '';
   private onUpdate: ((update: TrackerUpdate) => void) | null = null;
 
+  constructor() {
+    // Resync as soon as the app comes back to the foreground, instead of
+    // waiting for the next periodic location update to notice we're offline.
+    AppState.addEventListener('change', this.handleAppStateChange);
+  }
+
+  private handleAppStateChange = (nextState: AppStateStatus) => {
+    if (nextState === 'active' && this.trackerState instanceof SendingLocalState) {
+      this.tryReconnectAndSync();
+    }
+  };
+
   private async connectMqtt(): Promise<boolean> {
     try {
       mqttService.connect();
@@ -33,6 +47,7 @@ export class LocationTracker {
     } catch (error) {
       console.warn("Couldn't connect to MQTT, switching to local DB");
       this.trackerState = this.sendingLocalState;
+      toastService.show('savingLocally');
       return false;
     }
   }
@@ -40,6 +55,8 @@ export class LocationTracker {
   private async tryReconnectAndSync(): Promise<boolean> {
     let isConnected = await this.connectMqtt();
     if (!isConnected) return false;
+
+    toastService.show('syncingData');
 
     try {
       await this.trackerState.publishCoordinates(this);

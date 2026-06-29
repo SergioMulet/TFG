@@ -1,6 +1,6 @@
 import { LocationObject } from 'expo-location';
 
-import { TrackerState } from '../tracker_state';
+import { TrackerState } from '../trackerState';
 import { sqliteService } from '@/services/sqliteService';
 import { authContextManager } from '@/services/auth/authContext';
 import { API_URL } from '@/services/mainServerService';

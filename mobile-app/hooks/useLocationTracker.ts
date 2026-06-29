@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import * as Location from 'expo-location';
-import { locationTracker, BACKGROUND_LOCATION_TASK_NAME } from './location_tracker';
+import { locationTracker, BACKGROUND_LOCATION_TASK_NAME } from '@/services/location/locationTracker';
 
 export function useLocationTracker() {
   const [gpsActive, setGpsActive] = useState(false);

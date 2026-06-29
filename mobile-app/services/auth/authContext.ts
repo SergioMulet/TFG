@@ -1,5 +1,5 @@
 // services/auth/authContext.ts
-import { supabase } from '@/supabaseClient';
+import { supabase } from '@/services/supabaseClient';
 import { AuthStrategy, AuthResponse } from './type';
 
 export class AuthContext {
