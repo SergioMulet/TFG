@@ -187,7 +187,7 @@ func ShipExists(shipId, ownerEmail string) (bool, error) {
 	return result.Next(), nil
 }
 
-// FetchShipRoute returns the last 24h of recorded positions for a single
+// FetchShipRoute returns the last month of recorded positions for a single
 // ship, ordered oldest to newest, along with the most recently seen
 // owner_email/ship_type metadata.
 func FetchShipRoute(shipId string) (ShipRoute, error) {
@@ -196,7 +196,7 @@ func FetchShipRoute(shipId string) (ShipRoute, error) {
 
 	fluxQuery := fmt.Sprintf(`
 		from(bucket: "%s")
-			|> range(start: -24h)
+			|> range(start: -30d)
 			|> filter(fn: (r) => r["_measurement"] == "%s")
 			|> filter(fn: (r) => r["ship_id"] == "%s")
 			|> filter(fn: (r) => r["_field"] == "latitude" or r["_field"] == "longitude")
