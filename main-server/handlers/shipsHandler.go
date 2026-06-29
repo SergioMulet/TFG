@@ -1,14 +1,9 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"strings"
-	"time"
 
 	"main_server/repositories"
 	"main_server/ws"
@@ -42,83 +37,22 @@ type ShipDetails struct {
 	Route24    []Coordinates `json:"route24"`
 }
 
-// escapeFluxString escapes a value for safe interpolation into a Flux
-// double-quoted string literal
-func escapeFluxString(s string) string {
-	s = strings.ReplaceAll(s, `\`, `\\`)
-	s = strings.ReplaceAll(s, `"`, `\"`)
-	return s
-}
-
-func fetchShips() ([]ShipData, error) {
-	org := os.Getenv("INFLUX_ORG")
-	bucket := os.Getenv("INFLUX_BUCKET")
-	queryAPI := repositories.Infra.Influx.QueryAPI(org)
-
-	fluxQuery := fmt.Sprintf(`
-		from(bucket: "%s")
-			|> range(start: -30d)
-			|> filter(fn: (r) => r["_measurement"] == "boat_telemetry")
-			|> filter(fn: (r) => r["_field"] == "latitude" or r["_field"] == "longitude")
-			|> last()
-			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-	`, bucket)
-
-	result, err := queryAPI.Query(context.Background(), fluxQuery)
-	if err != nil {
-		return nil, err
+func toShipData(positions []repositories.ShipPosition) []ShipData {
+	ships := make([]ShipData, len(positions))
+	for i, p := range positions {
+		ships[i] = ShipData{ID: p.ID, Lat: p.Lat, Lng: p.Lng, Type: p.Type}
 	}
-
-	vesselsMap := make(map[string]*ShipData)
-	latestTime := make(map[string]time.Time)
-
-	for result.Next() {
-		record := result.Record()
-
-		shipId, shipIdOk := record.ValueByKey("ship_id").(string)
-		ownerEmail, emailOk := record.ValueByKey("owner_email").(string)
-
-		if shipId == "" || !shipIdOk || !emailOk || ownerEmail == "" {
-			continue
-		}
-
-		recordTime := record.Time()
-		if seen, ok := latestTime[shipId]; ok && !recordTime.After(seen) {
-			continue
-		}
-		latestTime[shipId] = recordTime
-
-		lat, _ := record.ValueByKey("latitude").(float64)
-		lng, _ := record.ValueByKey("longitude").(float64)
-		shipType, _ := record.ValueByKey("ship_type").(string)
-		if shipType == "" {
-			shipType = "other"
-		}
-
-		vesselsMap[shipId] = &ShipData{
-			ID:   shipId,
-			Lat:  lat,
-			Lng:  lng,
-			Type: shipType,
-		}
-	}
-
-	ships := []ShipData{}
-	for _, v := range vesselsMap {
-		ships = append(ships, *v)
-	}
-
-	return ships, nil
+	return ships
 }
 
 func GetShips(c *gin.Context) {
-	ships, err := fetchShips()
+	positions, err := repositories.FetchAllShipPositions()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, ships)
+	c.JSON(http.StatusOK, toShipData(positions))
 }
 
 // ShipsWebSocket upgrades the connection and streams ship position snapshots:
@@ -133,8 +67,8 @@ func ShipsWebSocket(c *gin.Context) {
 	ws.Hub.Register(conn)
 	defer ws.Hub.Unregister(conn)
 
-	if ships, err := fetchShips(); err == nil {
-		if data, err := json.Marshal(ships); err == nil {
+	if positions, err := repositories.FetchAllShipPositions(); err == nil {
+		if data, err := json.Marshal(toShipData(positions)); err == nil {
 			conn.WriteMessage(websocket.TextMessage, data)
 		}
 	}
@@ -150,13 +84,13 @@ func ShipsWebSocket(c *gin.Context) {
 // BroadcastShips re-queries the current ship snapshot and pushes it to every
 // connected WebSocket client. Call this after any telemetry write.
 func BroadcastShips() {
-	ships, err := fetchShips()
+	positions, err := repositories.FetchAllShipPositions()
 	if err != nil {
 		log.Printf("⚠️ Could not broadcast ships: %v", err)
 		return
 	}
 
-	data, err := json.Marshal(ships)
+	data, err := json.Marshal(toShipData(positions))
 	if err != nil {
 		log.Printf("⚠️ Could not marshal ships for broadcast: %v", err)
 		return
@@ -179,183 +113,39 @@ func IsShipRegistered(c *gin.Context) {
 		return
 	}
 
-	org := os.Getenv("INFLUX_ORG")
-	bucket := os.Getenv("INFLUX_BUCKET")
-	queryAPI := repositories.Infra.Influx.QueryAPI(org)
-
-	fluxQuery := fmt.Sprintf(`
-		from(bucket: "%s")
-			|> range(start: -100y)
-			|> filter(fn: (r) => r["_measurement"] == "boat_telemetry")
-			|> filter(fn: (r) => r["ship_id"] == "%s")
-			|> filter(fn: (r) => r["owner_email"] == "%s")
-			|> limit(n: 1)
-	`, bucket, escapeFluxString(shipId), escapeFluxString(ownerEmail))
-
-	result, err := queryAPI.Query(context.Background(), fluxQuery)
+	registered, err := repositories.ShipExists(shipId, ownerEmail)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	defer result.Close()
 
-	c.JSON(http.StatusOK, ShipRegistration{Registered: result.Next()})
+	c.JSON(http.StatusOK, ShipRegistration{Registered: registered})
 }
 
 func GetShipDetails(c *gin.Context) {
 	shipId := c.Param("id")
-	org := os.Getenv("INFLUX_ORG")
-	bucket := os.Getenv("INFLUX_BUCKET")
-	queryAPI := repositories.Infra.Influx.QueryAPI(org)
 
-	fluxQuery := fmt.Sprintf(`
-		from(bucket: "%s")
-			|> range(start: -24h)
-			|> filter(fn: (r) => r["_measurement"] == "boat_telemetry")
-			|> filter(fn: (r) => r["ship_id"] == "%s")
-			|> filter(fn: (r) => r["_field"] == "latitude" or r["_field"] == "longitude")
-			|> sort(columns: ["_time"], desc: false)
-			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-	`, bucket, escapeFluxString(shipId))
-
-	result, err := queryAPI.Query(context.Background(), fluxQuery)
+	route, err := repositories.FetchShipRoute(shipId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	defer result.Close()
 
-	details := ShipDetails{ShipId: shipId, Type: "other"}
-	var route []Coordinates
-
-	for result.Next() {
-		record := result.Record()
-		lat, _ := record.ValueByKey("latitude").(float64)
-		lng, _ := record.ValueByKey("longitude").(float64)
-
-		route = append(route, Coordinates{Lat: lat, Lng: lng})
-		details.Lat, details.Lng = lat, lng
-		if e, ok := record.ValueByKey("owner_email").(string); ok && e != "" {
-			details.OwnerEmail = e
-		}
-		if t, ok := record.ValueByKey("ship_type").(string); ok && t != "" {
-			details.Type = t
-		}
+	details := ShipDetails{
+		ShipId:     shipId,
+		OwnerEmail: route.OwnerEmail,
+		Type:       route.Type,
+		Lat:        route.Lat,
+		Lng:        route.Lng,
 	}
-	details.Route24 = route
-
-	c.JSON(http.StatusOK, details)
-}
-
-// GetShipDetailsByOwner returns the ship_id, type and last known coordinates
-// reported by the given owner_email.
-func GetShipDetailsByOwner(c *gin.Context) {
-	email := c.Param("email")
-	if email == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "email param is required"})
-		return
+	if details.Type == "" {
+		details.Type = "other"
 	}
-	escapedEmail := escapeFluxString(email)
-
-	org := os.Getenv("INFLUX_ORG")
-	bucket := os.Getenv("INFLUX_BUCKET")
-	queryAPI := repositories.Infra.Influx.QueryAPI(org)
-
-	fluxQuery := fmt.Sprintf(`
-		from(bucket: "%s")
-			|> range(start: -100y) // maybe a user has not log in since a long time
-			|> filter(fn: (r) => r["_measurement"] == "boat_telemetry")
-			|> filter(fn: (r) => r["owner_email"] == "%s")
-			|> filter(fn: (r) => r["_field"] == "latitude" or r["_field"] == "longitude")
-			|> last()
-			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-	`, bucket, escapedEmail)
-
-	result, err := queryAPI.Query(context.Background(), fluxQuery)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	defer result.Close()
-
-	if !result.Next() {
-		c.Status(http.StatusNoContent)
-		return
-	}
-
-	record := result.Record()
-	shipId, ok := record.ValueByKey("ship_id").(string)
-	if !ok || shipId == "" {
-		c.Status(http.StatusNoContent)
-		return
-	}
-
-	details := ShipDetails{ShipId: shipId, OwnerEmail: email, Type: "other"}
-	details.Lat, _ = record.ValueByKey("latitude").(float64)
-	details.Lng, _ = record.ValueByKey("longitude").(float64)
-	if t, ok := record.ValueByKey("ship_type").(string); ok && t != "" {
-		details.Type = t
+	for _, p := range route.Points {
+		details.Route24 = append(details.Route24, Coordinates{Lat: p.Lat, Lng: p.Lng})
 	}
 
 	c.JSON(http.StatusOK, details)
-}
-
-// fetchShipsByOwner returns the latest known position/type for every
-// distinct ship_id ever reported under the given owner_email.
-func fetchShipsByOwner(ownerEmail string) ([]ShipData, error) {
-	org := os.Getenv("INFLUX_ORG")
-	bucket := os.Getenv("INFLUX_BUCKET")
-	queryAPI := repositories.Infra.Influx.QueryAPI(org)
-
-	fluxQuery := fmt.Sprintf(`
-		from(bucket: "%s")
-			|> range(start: -100y)
-			|> filter(fn: (r) => r["_measurement"] == "boat_telemetry")
-			|> filter(fn: (r) => r["owner_email"] == "%s")
-			|> filter(fn: (r) => r["_field"] == "latitude" or r["_field"] == "longitude")
-			|> last()
-			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-	`, bucket, escapeFluxString(ownerEmail))
-
-	result, err := queryAPI.Query(context.Background(), fluxQuery)
-	if err != nil {
-		return nil, err
-	}
-	defer result.Close()
-
-	vesselsMap := make(map[string]*ShipData)
-	latestTime := make(map[string]time.Time)
-
-	for result.Next() {
-		record := result.Record()
-
-		shipId, ok := record.ValueByKey("ship_id").(string)
-		if !ok || shipId == "" {
-			continue
-		}
-
-		recordTime := record.Time()
-		if seen, ok := latestTime[shipId]; ok && !recordTime.After(seen) {
-			continue
-		}
-		latestTime[shipId] = recordTime
-
-		lat, _ := record.ValueByKey("latitude").(float64)
-		lng, _ := record.ValueByKey("longitude").(float64)
-		shipType, _ := record.ValueByKey("ship_type").(string)
-		if shipType == "" {
-			shipType = "other"
-		}
-
-		vesselsMap[shipId] = &ShipData{ID: shipId, Lat: lat, Lng: lng, Type: shipType}
-	}
-
-	ships := []ShipData{}
-	for _, v := range vesselsMap {
-		ships = append(ships, *v)
-	}
-
-	return ships, nil
 }
 
 // GetShipsByOwner lists every ship ever registered by the given owner_email.
@@ -366,13 +156,13 @@ func GetShipsByOwner(c *gin.Context) {
 		return
 	}
 
-	ships, err := fetchShipsByOwner(email)
+	positions, err := repositories.FetchShipPositionsByOwner(email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, ships)
+	c.JSON(http.StatusOK, toShipData(positions))
 }
 
 // DeleteShip permanently erases all telemetry recorded for the given
@@ -385,18 +175,7 @@ func DeleteShip(c *gin.Context) {
 		return
 	}
 
-	org := os.Getenv("INFLUX_ORG")
-	bucket := os.Getenv("INFLUX_BUCKET")
-	deleteAPI := repositories.Infra.Influx.DeleteAPI()
-
-	predicate := fmt.Sprintf(
-		`_measurement="boat_telemetry" and ship_id="%s" and owner_email="%s"`,
-		escapeFluxString(shipId), escapeFluxString(ownerEmail),
-	)
-
-	start := time.Unix(0, 0)
-	stop := time.Now()
-	if err := deleteAPI.DeleteWithName(context.Background(), org, bucket, start, stop, predicate); err != nil {
+	if err := repositories.DeleteShipTelemetry(shipId, ownerEmail); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
