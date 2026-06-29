@@ -16,7 +16,7 @@ export default function DashboardScreen() {
   let strings = translations[lang];
 
   const { location, gpsActive, toggleGPS, syncStatus } = useLocationTracker();
-  const { selectedShipId } = useSelectedShip();
+  const { selectedShipId, setSelectedShipId } = useSelectedShip();
 
   const [ship, setShip] = useState<ShipSummary | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -38,17 +38,28 @@ export default function DashboardScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      if (!userEmail || !selectedShipId) {
+      if (!userEmail) {
         setShip(null);
         setLoadingShip(false);
         return;
       }
       setLoadingShip(true);
       mainServerService.getShipsByOwner(userEmail).then((ships) => {
-        setShip(ships.find((s) => s.id === selectedShipId) ?? null);
+        const match = ships.find((s) => s.id === selectedShipId);
+        if (match) {
+          setShip(match);
+        } else if (ships.length > 0) {
+          // No ship selected yet (or the selected one no longer exists) but
+          // the user does have ships, so default to the first one instead
+          // of showing "no ship registered yet".
+          setSelectedShipId(ships[0].id);
+          setShip(ships[0]);
+        } else {
+          setShip(null);
+        }
         setLoadingShip(false);
       });
-    }, [userEmail, selectedShipId]),
+    }, [userEmail, selectedShipId, setSelectedShipId]),
   );
 
   const enableTracking = () => {

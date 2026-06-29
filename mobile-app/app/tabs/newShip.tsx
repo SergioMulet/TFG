@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   Text,
   View,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 
 import globalStyles, { COLORS } from '../styles';
 import useLanguage from '../../internazionalization/languageContext';
@@ -43,6 +44,7 @@ export default function NewShipScreen() {
     value: key,
   }));
 
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [shipId, setShipId] = useState('');
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [isFocus, setIsFocus] = useState(false);
@@ -53,13 +55,32 @@ export default function NewShipScreen() {
   const [showTypeError, setShowTypeError] = useState(false);
   const [showLocationError, setShowLocationError] = useState(false);
   const [showRegistrationError, setShowRegistrationError] = useState(false);
+  const [showDuplicateError, setShowDuplicateError] = useState(false);
 
   useAutoDismiss(showShipIdError, setShowShipIdError);
   useAutoDismiss(showTypeError, setShowTypeError);
   useAutoDismiss(showLocationError, setShowLocationError);
   useAutoDismiss(showRegistrationError, setShowRegistrationError);
+  useAutoDismiss(showDuplicateError, setShowDuplicateError);
 
-  const handleOpenVerification = () => {
+  // cleen values (expo-router keeps tab screens alive).
+  useFocusEffect(
+    useCallback(() => {
+      setShipId('');
+      setSelectedType(null);
+      setShowShipIdError(false);
+      setShowTypeError(false);
+      setShowLocationError(false);
+      setShowRegistrationError(false);
+      setShowDuplicateError(false);
+
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setUserEmail(session?.user?.email ?? null);
+      });
+    }, []),
+  );
+
+  const handleOpenVerification = async () => {
     const missingShipId = !shipId.trim();
     const missingType = !selectedType;
     if (missingShipId || missingType) {
@@ -67,6 +88,18 @@ export default function NewShipScreen() {
       setShowTypeError(missingType);
       return;
     }
+
+    if (userEmail) {
+      const alreadyRegistered = await mainServerService.isShipRegistered(
+        shipId.trim(),
+        userEmail,
+      );
+      if (alreadyRegistered) {
+        setShowDuplicateError(true);
+        return;
+      }
+    }
+
     setShowOwnershipModal(true);
   };
 
@@ -74,11 +107,7 @@ export default function NewShipScreen() {
     setShowOwnershipModal(false);
     setIsRegistering(true);
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const ownerEmail = session?.user?.email;
-      if (!ownerEmail) {
+      if (!userEmail) {
         setShowRegistrationError(true);
         return;
       }
@@ -86,7 +115,7 @@ export default function NewShipScreen() {
       const result = await mainServerService.registerShip(
         shipId.trim(),
         selectedType!,
-        ownerEmail,
+        userEmail,
       );
 
       if (result.success) {
@@ -129,6 +158,7 @@ export default function NewShipScreen() {
           placeholder={strings.chooseType}
           placeholderStyle={styles.text}
           containerStyle={styles.dropdownContainer}
+          activeColor={COLORS.cardBackground}
           selectedTextStyle={styles.text}
           itemTextStyle={styles.text}
           data={SHIP_TYPES}
@@ -149,7 +179,14 @@ export default function NewShipScreen() {
           </Text>
         )}
         {showRegistrationError && (
-          <Text style={[styles.text, { color: COLORS.red }]}>{strings.registrationError}</Text>
+          <Text style={[styles.text, { color: COLORS.red }]}>
+            {strings.registrationError}
+          </Text>
+        )}
+        {showDuplicateError && (
+          <Text style={[styles.text, { color: COLORS.red }]}>
+            {strings.duplicateShipError}
+          </Text>
         )}
 
         <TouchableOpacity
