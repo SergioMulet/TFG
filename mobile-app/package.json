@@ -45,5 +45,11 @@
     "react-test-renderer": "19.1.0",
     "typescript": "~5.9.2"
   },
+  "overrides": {
+    "undici": "^6.27.0",
+    "tar": "^7.5.16",
+    "uuid": "^11.1.1",
+    "js-yaml": "^4.2.0"
+  },
   "private": true
 }

@@ -3,7 +3,6 @@ import {
   ScrollView,
   View,
   Text,
-  useWindowDimensions,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
@@ -23,8 +22,6 @@ import useSelectedShip from '@/hooks/selectedShipContext';
 import { locationTracker } from '@/hooks/location/location_tracker';
 
 export default function SettingsScreen() {
-  const { width } = useWindowDimensions();
-  const isPhone = width <= 800;
   const styles = globalStyles();
   const router = useRouter();
 

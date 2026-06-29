@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
-  useWindowDimensions,
 } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { SvgUri } from 'react-native-svg';
@@ -21,9 +20,6 @@ WebBrowser.maybeCompleteAuthSession();
 export default function LoginScreen() {
   const { lang } = useLanguage();
   const strings = translations[lang];
-
-  const { width } = useWindowDimensions();
-  const isPhone = width <= 800;
   const styles = globalStyles();
 
   const {
