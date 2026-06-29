@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 import * as Linking from "expo-linking";
-import { supabase } from "../../../supabaseClient";
+import { supabase } from "../../../services/supabaseClient";
 import { AuthStrategy, AuthResponse } from "../type";
 
 export class GoogleStrategy implements AuthStrategy {

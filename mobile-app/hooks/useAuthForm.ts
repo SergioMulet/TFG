@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Alert, Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../services/supabaseClient';
 import { authContextManager } from '@/services/auth/authContext';
 import { EmailStrategy } from '@/services/auth/strategies/emailAuthStrategy';
 import { GoogleStrategy } from '@/services/auth/strategies/googleAuthStrategy';
-import { useAutoDismiss } from '@/hooks/use_auto_dismiss';
+import { useAutoDismiss } from '@/hooks/useAutoDismiss';
 import useLanguage from '@/internazionalization/languageContext';
 import translations from '@/internazionalization/i18n';
 

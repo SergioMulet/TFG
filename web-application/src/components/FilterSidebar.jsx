@@ -10,7 +10,6 @@ import {
   Divider,
   Checkbox,
   Tooltip,
-  Link,
   ListItemIcon,
 } from '@mui/material';
 
@@ -23,7 +22,7 @@ import { SHIP_CONFIG, SHIP_TYPE_KEYS } from '../shipTypes';
 
 export default function FilterSidebar({ selectedTypes, setSelectedTypes }) {
   const [expanded, setExpanded] = useState(true);
-  const { lang, setLang } = useLanguage();
+  const { lang } = useLanguage();
   const strings = translations[lang];
 
   const SHIP_KEYS = SHIP_TYPE_KEYS;

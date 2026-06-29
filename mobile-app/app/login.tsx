@@ -12,7 +12,7 @@ import { SvgUri } from 'react-native-svg';
 import globalStyles, { COLORS } from './styles';
 import useLanguage from '../internazionalization/languageContext';
 import translations from '../internazionalization/i18n';
-import { useAuthForm } from '@/hooks/auth_form';
+import { useAuthForm } from '@/hooks/useAuthForm';
 import LanguageSelector from '@/components/languageSelector';
 
 WebBrowser.maybeCompleteAuthSession();

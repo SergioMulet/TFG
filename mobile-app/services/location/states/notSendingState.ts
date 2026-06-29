@@ -1,5 +1,5 @@
 import { LocationObject } from 'expo-location';
-import { TrackerState } from '../tracker_state';
+import { TrackerState } from '../trackerState';
 
 export class NotSendingState implements TrackerState {
   publishCoordinates(): void {

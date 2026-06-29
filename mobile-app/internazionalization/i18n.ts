@@ -64,6 +64,8 @@ const translations = {
     deleteShipMessage: 'The ship will be permanently deleted from the system.',
     delete: 'Delete',
     duplicateShipError: 'You already have a ship with this ID.',
+    syncingData: 'Syncing data with the server...',
+    savingLocally: 'Connection lost. Saving coordinates locally.',
   },
   es: {
     longitude: 'Longitud',
@@ -131,6 +133,8 @@ const translations = {
     deleteShipMessage: 'El barco se eliminará permanentemente del sistema.',
     delete: 'Eliminar',
     duplicateShipError: 'Ya tienes un barco con este ID.',
+    syncingData: 'Sincronizando datos con el servidor...',
+    savingLocally: 'Conexión perdida. Guardando coordenadas localmente.',
   },
 };
 

@@ -17,10 +17,10 @@ import useLanguage from '@/internazionalization/languageContext';
 import translations from '@/internazionalization/i18n';
 import LanguageSelector from '@/components/languageSelector';
 import { authContextManager } from '@/services/auth/authContext';
-import { supabase } from '@/supabaseClient';
+import { supabase } from '@/services/supabaseClient';
 import { mainServerService, ShipSummary } from '@/services/mainServerService';
 import useSelectedShip from '@/hooks/selectedShipContext';
-import { locationTracker } from '@/hooks/location/location_tracker';
+import { locationTracker } from '@/services/location/locationTracker';
 
 export default function SettingsScreen() {
   const styles = globalStyles();

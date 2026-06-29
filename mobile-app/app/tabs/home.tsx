@@ -6,8 +6,8 @@ import globalStyles, { COLORS } from '../styles';
 import useLanguage from '../../internazionalization/languageContext';
 import translations from '../../internazionalization/i18n';
 import LanguageSelector from '@/components/languageSelector';
-import { useLocationTracker } from '@/hooks/location/use_location_tracker';
-import { supabase } from '@/supabaseClient';
+import { useLocationTracker } from '@/hooks/useLocationTracker';
+import { supabase } from '@/services/supabaseClient';
 import { mainServerService, ShipSummary } from '@/services/mainServerService';
 import useSelectedShip from '@/hooks/selectedShipContext';
 
