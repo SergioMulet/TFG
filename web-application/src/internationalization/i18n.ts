@@ -20,6 +20,8 @@ const translations = {
     tug: 'Tug',
     boat: 'Boat',
     other: 'Other',
+    shipId: 'Ship ID',
+    ownerEmail: 'Owner',
   },
   es: {
     filters: 'Filtros',
@@ -42,6 +44,8 @@ const translations = {
     tug: 'Remolcador',
     boat: 'Embarcación menor',
     other: 'Otro',
+    shipId: 'ID del barco',
+    ownerEmail: 'Propietario',
   },
 };
 

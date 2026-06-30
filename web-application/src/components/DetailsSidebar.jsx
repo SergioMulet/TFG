@@ -12,14 +12,14 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
   const { lang } = useLanguage();
   const strings = translations[lang];
 
-  const [shipDetails, setShipDetails] = useState([]);
+  const [shipDetails, setShipDetails] = useState({});
 
   useEffect(() => {
     shipLoader.loadDetails(shipId, setShipDetails);
   }, [shipId]);
 
   const handleDisplayRoute = () => {
-    onDisplayRoute(shipDetails.route24 || []);
+    onDisplayRoute(shipDetails.route || []);
   };
 
   // Ship type comes from the backend as a raw key (e.g. "yacht"), so it
@@ -60,6 +60,24 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
       </Box>
 
       <Divider sx={{ mb: { xs: 1, sm: 3 }, borderColor: 'secondary.main' }} />
+
+      {/* Ship ID & owner */}
+      <Box sx={cardSx}>
+        <Typography
+          variant="body2"
+          sx={{ color: 'secondary.contrastText', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+        >
+          <Box component="span" sx={{ fontWeight: 'bold' }}>{strings.shipId}: </Box>
+          {shipDetails.ship_id}
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{ color: 'secondary.contrastText', fontSize: { xs: '0.75rem', sm: '0.875rem' }, mt: { xs: 0.5, sm: 1 } }}
+        >
+          <Box component="span" sx={{ fontWeight: 'bold' }}>{strings.ownerEmail}: </Box>
+          {shipDetails.owner_email}
+        </Typography>
+      </Box>
 
       {/* Ship type */}
       <Box sx={cardSx}>

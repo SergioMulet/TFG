@@ -34,7 +34,7 @@ type ShipDetails struct {
 	Type       string        `json:"type"`
 	Lat        float64       `json:"lat"`
 	Lng        float64       `json:"lng"`
-	Route24    []Coordinates `json:"route24"`
+	Route      []Coordinates `json:"route"`
 }
 
 func toShipData(positions []repositories.ShipPosition) []ShipData {
@@ -142,7 +142,7 @@ func GetShipDetails(c *gin.Context) {
 		details.Type = "other"
 	}
 	for _, p := range route.Points {
-		details.Route24 = append(details.Route24, Coordinates{Lat: p.Lat, Lng: p.Lng})
+		details.Route = append(details.Route, Coordinates{Lat: p.Lat, Lng: p.Lng})
 	}
 
 	c.JSON(http.StatusOK, details)
