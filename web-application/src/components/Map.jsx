@@ -91,7 +91,7 @@ export default function Map({ selectedShipId, onSelectShip, ships, route, select
         {isShowingRoute && (
           <Marker
             position={routePoints[routePoints.length - 1]}
-            icon={createLeafletShipIcon(routeColor)}
+            icon={createLeafletShipIcon(routeColor, selectedShipId || 'Ship')}
           />
         )}
 
@@ -103,6 +103,7 @@ export default function Map({ selectedShipId, onSelectShip, ships, route, select
               position={[ship.lat, ship.lng]}
               icon={createLeafletShipIcon(
                 SHIP_CONFIG[ship.type]?.color || theme.palette.primary.main,
+                ship.id,
               )}
               eventHandlers={{
                 click: () => {

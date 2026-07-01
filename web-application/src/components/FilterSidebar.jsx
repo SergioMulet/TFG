@@ -72,6 +72,7 @@ export default function FilterSidebar({ selectedTypes, setSelectedTypes }) {
           onClick={() => setExpanded(!expanded)}
           size="small"
           edge={expanded ? 'start' : false}
+          aria-label={expanded ? strings.collapseFilters : strings.expandFilters}
         >
           {expanded ? <ChevronLeftIcon /> : <MenuIcon />}
         </IconButton>
@@ -97,6 +98,7 @@ export default function FilterSidebar({ selectedTypes, setSelectedTypes }) {
                   }
                   disableRipple
                   size="small"
+                  slotProps={{ input: { 'aria-label': strings.allShips } }}
                 />
               </ListItemIcon>
               <ListItemText primary={strings.allShips} />
@@ -104,7 +106,7 @@ export default function FilterSidebar({ selectedTypes, setSelectedTypes }) {
           </ListItem>
         </Tooltip>
 
-        <Divider sx={{ my: 1 }} />
+        <Divider component="li" sx={{ my: 1 }} />
 
         {/* Ship types */}
         {SHIP_TYPES.map((type) => (
@@ -120,6 +122,7 @@ export default function FilterSidebar({ selectedTypes, setSelectedTypes }) {
                     checked={selectedTypes[type.value]}
                     disableRipple
                     size="small"
+                    slotProps={{ input: { 'aria-label': type.label } }}
                   />
                   {/* Icon */}
                   <Box

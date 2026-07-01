@@ -51,7 +51,7 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
     >
       {/* Back */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: { xs: 0.5, sm: 2 } }}>
-        <IconButton onClick={onBack} size="small" edge="start">
+        <IconButton onClick={onBack} edge="start" aria-label={strings.back}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h2" sx={{ fontSize: { xs: '1.1rem', sm: '1.5rem' } }}>
