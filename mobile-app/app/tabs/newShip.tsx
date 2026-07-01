@@ -141,7 +141,7 @@ export default function NewShipScreen() {
             style={styles.title}
             value={shipId}
             onChangeText={(text) => {
-              setShipId(text);
+              setShipId(text.replace(/\s/g, ''));
               setShowShipIdError(false);
             }}
             placeholder={strings.shipId}

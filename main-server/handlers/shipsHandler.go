@@ -29,12 +29,11 @@ type ShipData struct {
 }
 
 type ShipDetails struct {
-	ShipId     string        `json:"ship_id"`
-	OwnerEmail string        `json:"owner_email"`
-	Type       string        `json:"type"`
-	Lat        float64       `json:"lat"`
-	Lng        float64       `json:"lng"`
-	Route      []Coordinates `json:"route"`
+	ShipId string        `json:"ship_id"`
+	Type   string        `json:"type"`
+	Lat    float64       `json:"lat"`
+	Lng    float64       `json:"lng"`
+	Route  []Coordinates `json:"route"`
 }
 
 func toShipData(positions []repositories.ShipPosition) []ShipData {
@@ -132,11 +131,10 @@ func GetShipDetails(c *gin.Context) {
 	}
 
 	details := ShipDetails{
-		ShipId:     shipId,
-		OwnerEmail: route.OwnerEmail,
-		Type:       route.Type,
-		Lat:        route.Lat,
-		Lng:        route.Lng,
+		ShipId: shipId,
+		Type:   route.Type,
+		Lat:    route.Lat,
+		Lng:    route.Lng,
 	}
 	if details.Type == "" {
 		details.Type = "other"

@@ -61,21 +61,23 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
 
       <Divider sx={{ mb: { xs: 1, sm: 3 }, borderColor: 'secondary.main' }} />
 
-      {/* Ship ID & owner */}
+      {/* Ship ID */}
       <Box sx={cardSx}>
         <Typography
-          variant="body2"
-          sx={{ color: 'secondary.contrastText', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+          variant="h3"
+          sx={{
+            color: 'secondary.contrastText',
+            fontWeight: 'bold',
+            fontSize: { xs: '0.85rem', sm: '1.2rem' },
+          }}
         >
-          <Box component="span" sx={{ fontWeight: 'bold' }}>{strings.shipId}: </Box>
-          {shipDetails.ship_id}
+          {strings.shipId}
         </Typography>
         <Typography
-          variant="body2"
-          sx={{ color: 'secondary.contrastText', fontSize: { xs: '0.75rem', sm: '0.875rem' }, mt: { xs: 0.5, sm: 1 } }}
+          variant="body1"
+          sx={{ color: 'secondary.contrastText', fontSize: { xs: '0.8rem', sm: '1rem' } }}
         >
-          <Box component="span" sx={{ fontWeight: 'bold' }}>{strings.ownerEmail}: </Box>
-          {shipDetails.owner_email}
+          {shipDetails.ship_id}
         </Typography>
       </Box>
 

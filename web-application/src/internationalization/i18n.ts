@@ -21,7 +21,6 @@ const translations = {
     boat: 'Boat',
     other: 'Other',
     shipId: 'Ship ID',
-    ownerEmail: 'Owner',
   },
   es: {
     filters: 'Filtros',
@@ -45,7 +44,6 @@ const translations = {
     boat: 'Embarcación menor',
     other: 'Otro',
     shipId: 'ID del barco',
-    ownerEmail: 'Propietario',
   },
 };
 

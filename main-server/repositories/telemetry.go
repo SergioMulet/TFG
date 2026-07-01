@@ -40,11 +40,10 @@ type RoutePoint struct {
 
 // ShipRoute is a ship's recent route plus the latest metadata seen along it.
 type ShipRoute struct {
-	OwnerEmail string
-	Type       string
-	Lat        float64
-	Lng        float64
-	Points     []RoutePoint
+	Type   string
+	Lat    float64
+	Lng    float64
+	Points []RoutePoint
 }
 
 // escapeFluxString escapes a value for safe interpolation into a Flux
@@ -187,21 +186,21 @@ func ShipExists(shipId, ownerEmail string) (bool, error) {
 	return result.Next(), nil
 }
 
-// FetchShipRoute returns the full recorded history of positions for a single
-// ship, ordered oldest to newest, along with the most recently seen
-// owner_email/ship_type metadata.
+// FetchShipRoute returns the last 72 hours of recorded positions for a single
+// ship, ordered oldest to newest.
 func FetchShipRoute(shipId string) (ShipRoute, error) {
 	org, bucket := influxOrgBucket()
 	queryAPI := Infra.Influx.QueryAPI(org)
 
+	// pivot before sort so the global time-order is preserved across all series.
 	fluxQuery := fmt.Sprintf(`
 		from(bucket: "%s")
-			|> range(start: -100y)
+			|> range(start: -72h)
 			|> filter(fn: (r) => r["_measurement"] == "%s")
 			|> filter(fn: (r) => r["ship_id"] == "%s")
 			|> filter(fn: (r) => r["_field"] == "latitude" or r["_field"] == "longitude")
-			|> sort(columns: ["_time"], desc: false)
 			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+			|> sort(columns: ["_time"], desc: false)
 	`, bucket, measurement, escapeFluxString(shipId))
 
 	result, err := queryAPI.Query(context.Background(), fluxQuery)
@@ -210,20 +209,38 @@ func FetchShipRoute(shipId string) (ShipRoute, error) {
 	}
 	defer result.Close()
 
-	var route ShipRoute
+	var (
+		route      ShipRoute
+		latestTime time.Time
+	)
 	for result.Next() {
 		record := result.Record()
-		lat, _ := record.ValueByKey("latitude").(float64)
-		lng, _ := record.ValueByKey("longitude").(float64)
+
+		latRaw := record.ValueByKey("latitude")
+		lngRaw := record.ValueByKey("longitude")
+		if latRaw == nil || lngRaw == nil {
+			continue
+		}
+		lat, latOk := latRaw.(float64)
+		lng, lngOk := lngRaw.(float64)
+		if !latOk || !lngOk {
+			continue
+		}
 
 		route.Points = append(route.Points, RoutePoint{Lat: lat, Lng: lng})
-		route.Lat, route.Lng = lat, lng
-		if e, ok := record.ValueByKey("owner_email").(string); ok && e != "" {
-			route.OwnerEmail = e
+
+		// Time-based tracking ensures the most-recent record wins even if
+		// multiple tag-variant series produce multiple tables.
+		if t := record.Time(); t.After(latestTime) {
+			latestTime = t
+			route.Lat, route.Lng = lat, lng
+			if s, ok := record.ValueByKey("ship_type").(string); ok && s != "" {
+				route.Type = s
+			}
 		}
-		if t, ok := record.ValueByKey("ship_type").(string); ok && t != "" {
-			route.Type = t
-		}
+	}
+	if err := result.Err(); err != nil {
+		return ShipRoute{}, err
 	}
 
 	return route, nil
