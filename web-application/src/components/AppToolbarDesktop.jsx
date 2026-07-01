@@ -16,7 +16,11 @@ export default function AppToolbarDesktop({ view, onToggleView, ships, onSelectS
       {view === 'map' && <TotalShips ships={ships} />}
       {view === 'map' && <SearchBar ships={ships} onSelectShip={onSelectShip} />}
       <Tooltip title={view === 'map' ? 'Admin view' : 'Back to map'}>
-        <IconButton onClick={onToggleView} sx={{ color: 'accent.main' }}>
+        <IconButton
+          onClick={onToggleView}
+          sx={{ color: 'accent.main' }}
+          aria-label={view === 'map' ? 'Admin view' : 'Back to map'}
+        >
           {view === 'map' ? <AdminPanelSettingsIcon /> : <ArrowBackIcon />}
         </IconButton>
       </Tooltip>

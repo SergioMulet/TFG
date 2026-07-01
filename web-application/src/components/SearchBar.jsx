@@ -4,6 +4,7 @@ import {
   TextField,
   Paper,
   List,
+  ListItem,
   ListItemButton,
   ListItemText,
   InputAdornment,
@@ -51,6 +52,7 @@ export default function SearchBar({ ships, onSelectShip }) {
         onBlur={() => setIsFocused(false)}
         onKeyDown={handleKeyDown}
         slotProps={{
+          htmlInput: { 'aria-label': strings.searchShipPlaceholder },
           input: {
             startAdornment: (
               <InputAdornment position="start">
@@ -84,19 +86,22 @@ export default function SearchBar({ ships, onSelectShip }) {
           <List dense>
             {suggestions.length > 0 ? (
               suggestions.map((ship) => (
-                <ListItemButton
-                  key={ship.id}
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => handleSelect(ship.id)}
-                  sx={{ color: 'secondary.main' }}
-                >
-                  <ListItemText primary={ship.id} />
-                </ListItemButton>
+                <ListItem key={ship.id} disablePadding>
+                  <ListItemButton
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => handleSelect(ship.id)}
+                    sx={{ color: 'secondary.main' }}
+                  >
+                    <ListItemText primary={ship.id} />
+                  </ListItemButton>
+                </ListItem>
               ))
             ) : (
-              <ListItemButton disabled sx={{ color: 'secondary.main' }}>
-                <ListItemText primary={strings.noShipsFound} />
-              </ListItemButton>
+              <ListItem disablePadding>
+                <ListItemButton disabled sx={{ color: 'secondary.main' }}>
+                  <ListItemText primary={strings.noShipsFound} />
+                </ListItemButton>
+              </ListItem>
             )}
           </List>
         </Paper>

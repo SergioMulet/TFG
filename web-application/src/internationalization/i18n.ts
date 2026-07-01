@@ -21,6 +21,9 @@ const translations = {
     boat: 'Boat',
     other: 'Other',
     shipId: 'Ship ID',
+    back: 'Back',
+    collapseFilters: 'Collapse filters',
+    expandFilters: 'Expand filters',
   },
   es: {
     filters: 'Filtros',
@@ -44,6 +47,9 @@ const translations = {
     boat: 'Embarcación menor',
     other: 'Otro',
     shipId: 'ID del barco',
+    back: 'Atrás',
+    collapseFilters: 'Contraer filtros',
+    expandFilters: 'Expandir filtros',
   },
 };
 

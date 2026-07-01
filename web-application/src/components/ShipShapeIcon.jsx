@@ -21,12 +21,22 @@ ShipShapeIcon.propTypes = {
   color: PropTypes.string,
 };
 
+const ShipDivIcon = L.DivIcon.extend({
+  createIcon(oldIcon) {
+    const el = L.DivIcon.prototype.createIcon.call(this, oldIcon);
+    if (this.options.ariaLabel) {
+      el.setAttribute('aria-label', this.options.ariaLabel);
+    }
+    return el;
+  },
+});
+
 // Leaflet version
-export const createLeafletShipIcon = (color = '#0284c7') => {
-  return L.divIcon({
+export const createLeafletShipIcon = (color = '#0284c7', ariaLabel = '') =>
+  new ShipDivIcon({
     html: renderToString(<ShipShapeIcon color={color} />),
     className: 'custom-ship-marker',
     iconSize: [24, 16],
     iconAnchor: [12, 8],
+    ariaLabel,
   });
-};

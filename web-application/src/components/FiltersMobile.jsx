@@ -38,6 +38,7 @@ export default function FiltersMobile({ selectedTypes, setSelectedTypes }) {
           indeterminate={SHIP_TYPE_KEYS.some((k) => selectedTypes[k]) && !isAllSelected}
           onChange={handleToggleAll}
           size="small"
+          slotProps={{ input: { 'aria-label': strings.allShips } }}
         />
         <Typography variant="h2">{strings.filters}</Typography>
       </Box>
@@ -47,7 +48,7 @@ export default function FiltersMobile({ selectedTypes, setSelectedTypes }) {
         {SHIP_TYPES.map((type) => (
           <Box
             key={type.value}
-            onClick={() => handleToggle(type.value)}
+            component="label"
             sx={{
               display: 'flex',
               flexDirection: 'column',
@@ -56,7 +57,12 @@ export default function FiltersMobile({ selectedTypes, setSelectedTypes }) {
               textAlign: 'center',
             }}
           >
-            <Checkbox checked={selectedTypes[type.value]} size="small" sx={{ p: 0.5 }} />
+            <Checkbox
+              checked={selectedTypes[type.value]}
+              onChange={() => handleToggle(type.value)}
+              size="small"
+              sx={{ p: 0.5 }}
+            />
             <ShipShapeIcon color={type.color} />
             <Typography
               variant="caption"

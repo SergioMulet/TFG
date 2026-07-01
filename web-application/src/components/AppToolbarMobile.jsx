@@ -16,7 +16,11 @@ export default function AppToolbarMobile({ view, onToggleView, ships, onSelectSh
         </Typography>
         <Box sx={{ flexGrow: 1 }} />
         <Tooltip title={view === 'map' ? 'Admin view' : 'Back to map'}>
-          <IconButton onClick={onToggleView} sx={{ color: 'accent.main' }}>
+          <IconButton
+            onClick={onToggleView}
+            sx={{ color: 'accent.main' }}
+            aria-label={view === 'map' ? 'Admin view' : 'Back to map'}
+          >
             {view === 'map' ? <AdminPanelSettingsIcon /> : <ArrowBackIcon />}
           </IconButton>
         </Tooltip>
