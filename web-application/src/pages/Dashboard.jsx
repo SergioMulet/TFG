@@ -60,6 +60,7 @@ export default function Dashboard() {
       <AppToolbar
         view={view}
         onToggleView={() => setView(view === 'map' ? 'admin' : 'map')}
+        onGoToDashboard={() => setView('map')}
         ships={ships}
         onSelectShip={handleSelectShip}
         mobileSidebarOpen={mobileSidebarOpen}

@@ -6,6 +6,7 @@ import AppToolbarMobile from './AppToolbarMobile';
 export default function AppToolbar({
   view,
   onToggleView,
+  onGoToDashboard,
   ships,
   onSelectShip,
   mobileSidebarOpen,
@@ -27,6 +28,7 @@ export default function AppToolbar({
         <AppToolbarMobile
           view={view}
           onToggleView={onToggleView}
+          onGoToDashboard={onGoToDashboard}
           ships={ships}
           onSelectShip={onSelectShip}
           sidebarOpen={mobileSidebarOpen}
@@ -36,6 +38,7 @@ export default function AppToolbar({
         <AppToolbarDesktop
           view={view}
           onToggleView={onToggleView}
+          onGoToDashboard={onGoToDashboard}
           ships={ships}
           onSelectShip={onSelectShip}
         />

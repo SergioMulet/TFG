@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker } from 'react-leaflet';
 import { Box, useTheme } from '@mui/material';
 import L from 'leaflet';
 
@@ -87,6 +87,21 @@ export default function Map({ selectedShipId, onSelectShip, ships, route, select
             }}
           />
         ))}
+
+        {/* Start of the route: a plain circle so it reads as "origin" rather
+            than another ship position. */}
+        {isShowingRoute && routePoints.length > 1 && (
+          <CircleMarker
+            center={routePoints[0]}
+            radius={7}
+            pathOptions={{
+              color: '#222',
+              weight: 2,
+              fillColor: routeColor,
+              fillOpacity: 1,
+            }}
+          />
+        )}
 
         {isShowingRoute && (
           <Marker
