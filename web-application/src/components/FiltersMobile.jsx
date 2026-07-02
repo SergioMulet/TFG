@@ -40,7 +40,7 @@ export default function FiltersMobile({ selectedTypes, setSelectedTypes }) {
           size="small"
           slotProps={{ input: { 'aria-label': strings.allShips } }}
         />
-        <Typography variant="h2">{strings.filters}</Typography>
+        <Typography size="0.9rem">{strings.filters}</Typography>
       </Box>
 
       {/* Ship type filters, 3 per row */}
