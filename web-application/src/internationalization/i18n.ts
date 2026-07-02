@@ -24,6 +24,7 @@ const translations = {
     back: 'Back',
     collapseFilters: 'Collapse filters',
     expandFilters: 'Expand filters',
+    cancel: 'Cancel',
   },
   es: {
     filters: 'Filtros',
@@ -50,6 +51,7 @@ const translations = {
     back: 'Atrás',
     collapseFilters: 'Contraer filtros',
     expandFilters: 'Expandir filtros',
+    cancel: 'Cancelar',
   },
 };
 

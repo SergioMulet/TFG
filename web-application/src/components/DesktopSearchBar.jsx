@@ -14,7 +14,7 @@ import useLanguage from '../internationalization/LanguageContext';
 import translations from '../internationalization/i18n';
 import { filterService } from '../services/filterService';
 
-export default function SearchBar({ ships, onSelectShip }) {
+export default function DesktopSearchBar({ ships, onSelectShip }) {
   const { lang } = useLanguage();
   const strings = translations[lang];
 
@@ -41,7 +41,7 @@ export default function SearchBar({ ships, onSelectShip }) {
   const showDropdown = isFocused && query.trim().length > 0;
 
   return (
-    <Box sx={{ position: 'relative', width: { xs: 170, sm: 280 } }}>
+    <Box sx={{ position: 'relative', width: 280 }}>
       <TextField
         size="small"
         fullWidth

@@ -4,7 +4,7 @@ import useLanguage from '../internationalization/LanguageContext';
 import flagEs from '../assets/flag_es.svg';
 import flagEn from '../assets/flag_en.svg';
 
-export default function LanguageSelector() {
+export default function LanguageSelector({ size = 40 }) {
   const { lang, setLang } = useLanguage();
 
   return (
@@ -14,14 +14,14 @@ export default function LanguageSelector() {
         disabled={lang === 'es'}
         sx={{ opacity: lang === 'es' ? 0.4 : 1 }}
       >
-        <img src={flagEs} alt="Español" width={40} height={40} />
+        <img src={flagEs} alt="Español" width={size} height={size} />
       </IconButton>
       <IconButton
         onClick={() => setLang('en')}
         disabled={lang === 'en'}
         sx={{ opacity: lang === 'en' ? 0.4 : 1 }}
       >
-        <img src={flagEn} alt="English" width={40} height={40} />
+        <img src={flagEn} alt="English" width={size} height={size} />
       </IconButton>
     </Box>
   );

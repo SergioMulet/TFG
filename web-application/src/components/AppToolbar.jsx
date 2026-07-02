@@ -3,7 +3,14 @@ import { AppBar, useTheme, useMediaQuery } from '@mui/material';
 import AppToolbarDesktop from './AppToolbarDesktop';
 import AppToolbarMobile from './AppToolbarMobile';
 
-export default function AppToolbar({ view, onToggleView, ships, onSelectShip }) {
+export default function AppToolbar({
+  view,
+  onToggleView,
+  ships,
+  onSelectShip,
+  mobileSidebarOpen,
+  onToggleMobileSidebar,
+}) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -22,6 +29,8 @@ export default function AppToolbar({ view, onToggleView, ships, onSelectShip }) 
           onToggleView={onToggleView}
           ships={ships}
           onSelectShip={onSelectShip}
+          sidebarOpen={mobileSidebarOpen}
+          onToggleSidebar={onToggleMobileSidebar}
         />
       ) : (
         <AppToolbarDesktop

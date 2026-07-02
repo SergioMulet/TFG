@@ -13,8 +13,10 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
   const strings = translations[lang];
 
   const [shipDetails, setShipDetails] = useState({});
+  const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
+    setImageFailed(false);
     shipLoader.loadDetails(shipId, setShipDetails);
   }, [shipId]);
 
@@ -60,6 +62,19 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
       </Box>
 
       <Divider sx={{ mb: { xs: 1, sm: 3 }, borderColor: 'secondary.main' }} />
+
+      {/* Ship photo, if one was uploaded (Supabase Storage doesn't guarantee
+          the object exists, so fall back silently on load error). */}
+      {shipDetails.image_url && !imageFailed && (
+        <Box sx={{ ...cardSx, p: 0, overflow: 'hidden' }}>
+          <img
+            src={shipDetails.image_url}
+            alt={shipDetails.ship_id}
+            style={{ width: '100%', display: 'block' }}
+            onError={() => setImageFailed(true)}
+          />
+        </Box>
+      )}
 
       {/* Ship ID */}
       <Box sx={cardSx}>

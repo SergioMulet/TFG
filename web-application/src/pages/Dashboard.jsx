@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Box, CssBaseline, Toolbar } from '@mui/material';
+import {
+  Box,
+  CssBaseline,
+  Toolbar,
+  useTheme,
+  useMediaQuery,
+  Drawer,
+} from '@mui/material';
 import AppToolbar from '../components/AppToolbar';
 import Sidebar from '../components/Sidebar';
 import Map from '../components/Map';
@@ -8,15 +15,27 @@ import { shipLoader } from '../services/shipLoader';
 import { SHIP_TYPE_KEYS } from '../shipTypes';
 
 export default function Dashboard() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [selectedShipId, setSelectedShipId] = useState(null);
   const [ships, setShips] = useState([]);
   const [displayedRoute, setDisplayedRoute] = useState(null);
   const [view, setView] = useState('map');
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState(
     SHIP_TYPE_KEYS.reduce((acc, key) => ({ ...acc, [key]: true }), {}),
   );
   const handleBackToFilters = () => {
     setSelectedShipId(null);
+  };
+
+  // Selecting a ship is only useful once its details are visible, so on
+  // mobile (where the sidebar and the map are never shown at once) it also
+  // expands the sidebar.
+  const handleSelectShip = (shipId) => {
+    setSelectedShipId(shipId);
+    if (isMobile) setMobileSidebarOpen(true);
   };
 
   useEffect(() => {
@@ -28,7 +47,13 @@ export default function Dashboard() {
   }, [selectedShipId]);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, height: '100vh' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        height: '100vh',
+      }}
+    >
       <CssBaseline />
 
       {/* Nav */}
@@ -36,53 +61,95 @@ export default function Dashboard() {
         view={view}
         onToggleView={() => setView(view === 'map' ? 'admin' : 'map')}
         ships={ships}
-        onSelectShip={setSelectedShipId}
+        onSelectShip={handleSelectShip}
+        mobileSidebarOpen={mobileSidebarOpen}
+        onToggleMobileSidebar={() => setMobileSidebarOpen((open) => !open)}
       />
 
       {view === 'map' ? (
-        <>
-          {/* Sidebar */}
-          <Box
-            sx={{
-              width: { xs: '100%', sm: 'auto' },
-              height: { xs: '40vh', sm: '100vh' },
-              flexShrink: 0,
-              overflowY: 'auto',
-              pt: { xs: 0, sm: 8 },
-              borderRight: { xs: 0, sm: 1 },
-              borderBottom: { xs: 1, sm: 0 },
-              borderColor: 'divider',
-              bgcolor: 'background.paper',
-            }}
-          >
-            <Sidebar
-              selectedShipId={selectedShipId}
-              onBackToFilters={handleBackToFilters}
-              ships={ships}
-              onDisplayRoute={setDisplayedRoute}
-              selectedTypes={selectedTypes}
-              setSelectedTypes={setSelectedTypes}
-            />
-          </Box>
-
-          {/* Main component*/}
+        isMobile ? (
           <Box
             component="main"
-            sx={{ flexGrow: 1, height: { xs: 'auto', sm: '100vh' }, position: 'relative' }}
+            sx={{ flexGrow: 1, minHeight: 0, position: 'relative', height: '100vh' }}
           >
-            <Toolbar sx={{ display: { xs: 'none', sm: 'block' } }} />
-            {/* Map container */}
-            <Box sx={{ width: '100%', height: { xs: '100%', sm: 'calc(100vh - 64px)' } }}>
-              <Map
+            {/* Always full screen */}
+            <Map
+              selectedShipId={selectedShipId}
+              onSelectShip={handleSelectShip}
+              ships={ships}
+              route={displayedRoute}
+              selectedTypes={selectedTypes}
+            />
+
+            {/* Slide-out Sidebar for mobile */}
+            <Drawer
+              anchor="left"
+              open={mobileSidebarOpen}
+              onClose={() => setMobileSidebarOpen(false)}
+              PaperProps={{
+                sx: { width: '80%', maxWidth: '360px' },
+              }}
+            >
+              <Toolbar
+                sx={{
+                  background: 'linear-gradient(to bottom, #1e293b 0%, #b8ebff 100%)',
+                }}
+              />{' '}
+              {/* Spacer to push content below the AppToolbar if needed */}
+              <Sidebar
                 selectedShipId={selectedShipId}
-                onSelectShip={setSelectedShipId}
+                onBackToFilters={handleBackToFilters}
                 ships={ships}
-                route={displayedRoute}
+                onDisplayRoute={setDisplayedRoute}
                 selectedTypes={selectedTypes}
+                setSelectedTypes={setSelectedTypes}
+              />
+            </Drawer>
+          </Box>
+        ) : (
+          <>
+            {/* Sidebar */}
+            <Box
+              sx={{
+                width: 'auto',
+                height: '100vh',
+                flexShrink: 0,
+                overflowY: 'auto',
+                pt: 8,
+                borderRight: 1,
+                borderColor: 'divider',
+                bgcolor: 'background.paper',
+              }}
+            >
+              <Sidebar
+                selectedShipId={selectedShipId}
+                onBackToFilters={handleBackToFilters}
+                ships={ships}
+                onDisplayRoute={setDisplayedRoute}
+                selectedTypes={selectedTypes}
+                setSelectedTypes={setSelectedTypes}
               />
             </Box>
-          </Box>
-        </>
+
+            {/* Main component*/}
+            <Box
+              component="main"
+              sx={{ flexGrow: 1, height: '100vh', position: 'relative' }}
+            >
+              <Toolbar />
+              {/* Map container */}
+              <Box sx={{ width: '100%', height: 'calc(100vh - 64px)' }}>
+                <Map
+                  selectedShipId={selectedShipId}
+                  onSelectShip={handleSelectShip}
+                  ships={ships}
+                  route={displayedRoute}
+                  selectedTypes={selectedTypes}
+                />
+              </Box>
+            </Box>
+          </>
+        )
       ) : (
         <Box component="main" sx={{ flexGrow: 1, height: { xs: 'auto', sm: '100vh' } }}>
           <Toolbar sx={{ display: { xs: 'none', sm: 'block' } }} />
