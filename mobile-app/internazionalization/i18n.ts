@@ -66,6 +66,7 @@ const translations = {
     duplicateShipError: 'You already have a ship with this ID.',
     syncingData: 'Syncing data with the server...',
     savingLocally: 'Connection lost. Saving coordinates locally.',
+    addShipPhoto: 'Add ship photo (optional)',
   },
   es: {
     longitude: 'Longitud',
@@ -135,6 +136,7 @@ const translations = {
     duplicateShipError: 'Ya tienes un barco con este ID.',
     syncingData: 'Sincronizando datos con el servidor...',
     savingLocally: 'Conexión perdida. Guardando coordenadas localmente.',
+    addShipPhoto: 'Añadir foto del barco (opcional)',
   },
 };
 

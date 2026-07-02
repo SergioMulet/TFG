@@ -6,10 +6,12 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 
 import globalStyles, { COLORS } from '../styles';
 import useLanguage from '../../internazionalization/languageContext';
@@ -47,6 +49,7 @@ export default function NewShipScreen() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [shipId, setShipId] = useState('');
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [imageUri, setImageUri] = useState<string | null>(null);
   const [isFocus, setIsFocus] = useState(false);
   const [showOwnershipModal, setShowOwnershipModal] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -68,6 +71,7 @@ export default function NewShipScreen() {
     useCallback(() => {
       setShipId('');
       setSelectedType(null);
+      setImageUri(null);
       setShowShipIdError(false);
       setShowTypeError(false);
       setShowLocationError(false);
@@ -79,6 +83,19 @@ export default function NewShipScreen() {
       });
     }, []),
   );
+
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+    });
+    if (result.canceled) return;
+
+    setImageUri(result.assets[0].uri);
+  };
 
   const handleOpenVerification = async () => {
     const missingShipId = !shipId.trim();
@@ -119,6 +136,9 @@ export default function NewShipScreen() {
       );
 
       if (result.success) {
+        if (imageUri) {
+          await mainServerService.uploadShipImage(shipId.trim(), imageUri);
+        }
         setSelectedShipId(shipId.trim());
         router.replace('/tabs/home');
       } else if (result.reason === 'location_permission') {
@@ -172,6 +192,18 @@ export default function NewShipScreen() {
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
         />
+
+        <TouchableOpacity style={styles.boatCard} onPress={handlePickImage}>
+          {imageUri ? (
+            <Image
+              source={{ uri: imageUri }}
+              style={{ width: '100%', height: 160, borderRadius: 10 }}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text style={styles.text}>{strings.addShipPhoto}</Text>
+          )}
+        </TouchableOpacity>
 
         {showLocationError && (
           <Text style={[styles.text, { color: COLORS.red }]}>
