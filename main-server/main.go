@@ -46,6 +46,7 @@ func main() {
 	protected.Use(middleware.AuthMiddleWare(repositories.Infra.Supabase))
 	{
 		protected.POST("/telemetry/sync", handlers.SyncOfflineTelemetry)
+		protected.POST("/ships/:id/image", handlers.UploadShipImage)
 	}
 
 	router.GET("/ws/ships", handlers.ShipsWebSocket)
