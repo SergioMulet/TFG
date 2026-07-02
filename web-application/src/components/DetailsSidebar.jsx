@@ -8,6 +8,8 @@ import useLanguage from '../internationalization/LanguageContext';
 import translations from '../internationalization/i18n';
 import { shipLoader } from '../services/shipLoader';
 
+const IMAGE_HEIGHT = 200;
+
 export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
   const { lang } = useLanguage();
   const strings = translations[lang];
@@ -63,14 +65,20 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
 
       <Divider sx={{ mb: { xs: 1, sm: 3 }, borderColor: 'secondary.main' }} />
 
-      {/* Ship photo, if one was uploaded (Supabase Storage doesn't guarantee
-          the object exists, so fall back silently on load error). */}
+      {/* Ship photo, fixed size so it never grows the sidebar (Supabase
+          Storage doesn't guarantee the object exists, so fall back silently
+          on load error). */}
       {shipDetails.image_url && !imageFailed && (
-        <Box sx={{ ...cardSx, p: 0, overflow: 'hidden' }}>
+        <Box sx={{ ...cardSx, p: 0, height: IMAGE_HEIGHT, overflow: 'hidden' }}>
           <img
             src={shipDetails.image_url}
             alt={shipDetails.ship_id}
-            style={{ width: '100%', display: 'block' }}
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'block',
+              objectFit: 'cover',
+            }}
             onError={() => setImageFailed(true)}
           />
         </Box>

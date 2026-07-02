@@ -6,10 +6,22 @@ import LanguageSelector from './LanguageSelector';
 import DesktopSearchBar from './DesktopSearchBar';
 import TotalShips from './TotalShips';
 
-export default function AppToolbarDesktop({ view, onToggleView, ships, onSelectShip }) {
+export default function AppToolbarDesktop({
+  view,
+  onToggleView,
+  onGoToDashboard,
+  ships,
+  onSelectShip,
+}) {
   return (
     <Toolbar sx={{ gap: 2 }}>
-      <Typography variant="h1" noWrap component="div" sx={{ fontWeight: 'bold' }}>
+      <Typography
+        variant="h1"
+        noWrap
+        component="div"
+        onClick={onGoToDashboard}
+        sx={{ fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}
+      >
         Ships tracker
       </Typography>
       <Box sx={{ flexGrow: 1 }} />

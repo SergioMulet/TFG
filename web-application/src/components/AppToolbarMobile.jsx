@@ -10,6 +10,7 @@ import MobileSearchBar from './MobileSearchBar';
 export default function AppToolbarMobile({
   view,
   onToggleView,
+  onGoToDashboard,
   ships,
   onSelectShip,
   sidebarOpen,
@@ -46,6 +47,7 @@ export default function AppToolbarMobile({
         variant="h1"
         noWrap
         component="div"
+        onClick={onGoToDashboard}
         sx={{
           position: 'absolute',
           left: '50%',
@@ -53,6 +55,8 @@ export default function AppToolbarMobile({
           fontSize: '1.0rem',
           fontWeight: 'bold',
           maxWidth: '35%',
+          cursor: 'pointer',
+          textDecoration: 'underline',
         }}
       >
         Ships tracker
@@ -62,7 +66,7 @@ export default function AppToolbarMobile({
 
       {/* Right: search + language flags */}
       {view === 'map' && <MobileSearchBar ships={ships} onSelectShip={onSelectShip} />}
-      <LanguageSelector size={24} />
+      {view === 'map' && <LanguageSelector size={24} />}
     </Toolbar>
   );
 }
