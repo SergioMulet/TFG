@@ -106,7 +106,9 @@ export default function FilterSidebar({ selectedTypes, setSelectedTypes }) {
           </ListItem>
         </Tooltip>
 
-        <Divider component="li" sx={{ my: 1 }} />
+        <li>
+          <Divider sx={{ my: 1 }} />
+        </li>
 
         {/* Ship types */}
         {SHIP_TYPES.map((type) => (
