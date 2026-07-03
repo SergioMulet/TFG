@@ -60,7 +60,7 @@ describe('NotSendingState', () => {
   const state = new NotSendingState();
 
   it('publishCoordinates is a no-op — MQTT is never called', async () => {
-    await state.publishCoordinates({} as any);
+    state.publishCoordinates({} as any);
     expect(mqttService.publish).not.toHaveBeenCalled();
   });
 
