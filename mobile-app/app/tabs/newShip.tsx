@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
+  StyleSheet,
 } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { useRouter } from 'expo-router';
@@ -193,17 +194,18 @@ export default function NewShipScreen() {
           onBlur={() => setIsFocus(false)}
         />
 
-        <TouchableOpacity style={styles.boatCard} onPress={handlePickImage}>
-          {imageUri ? (
+        <View style={photoStyles.row}>
+          <TouchableOpacity style={photoStyles.button} onPress={handlePickImage}>
+            <Text style={photoStyles.buttonText}>{strings.addShipPhoto}</Text>
+          </TouchableOpacity>
+          {imageUri && (
             <Image
               source={{ uri: imageUri }}
-              style={{ width: '100%', height: '100%', borderRadius: 10 }}
-              resizeMode="contain"
+              style={photoStyles.thumbnail}
+              resizeMode="cover"
             />
-          ) : (
-            <Text style={styles.text}>{strings.addShipPhoto}</Text>
           )}
-        </TouchableOpacity>
+        </View>
 
         {showLocationError && (
           <Text style={[styles.text, { color: COLORS.red }]}>
@@ -249,3 +251,32 @@ export default function NewShipScreen() {
     </ScrollView>
   );
 }
+
+const photoStyles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    width: '100%',
+    marginVertical: '3%',
+  },
+  button: {
+    backgroundColor: '#071D64',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  buttonText: {
+    color: '#E8EEFA',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  thumbnail: {
+    width: 90,
+    height: 90,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#071D64',
+  },
+});
