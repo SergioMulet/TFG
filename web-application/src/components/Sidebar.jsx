@@ -4,6 +4,7 @@ import { useTheme, useMediaQuery } from '@mui/material';
 import FilterSidebar from './FilterSidebar';
 import FiltersMobile from './FiltersMobile';
 import DetailsSidebar from './DetailsSidebar';
+import DetailsMobile from './DetailsMobile';
 
 export default function Sidebar({
   selectedShipId,
@@ -23,7 +24,9 @@ export default function Sidebar({
     );
   }
 
-  return (
+  return isMobile ? (
+    <DetailsMobile shipId={selectedShipId} onBack={onBackToFilters} onDisplayRoute={onDisplayRoute} />
+  ) : (
     <DetailsSidebar
       shipId={selectedShipId}
       onBack={onBackToFilters}

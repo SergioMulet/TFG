@@ -12,6 +12,19 @@ const COLORS = {
 };
 
 const theme = createTheme({
+  // MUI replaces the whole values object rather than merging with its
+  // defaults, so the untouched breakpoints (xs/md/lg/xl) must stay listed
+  // here or they become undefined and break every xs/md breakpoint used
+  // throughout the app.
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 872,
+      md: 900,
+      lg: 1200,
+      xl: 1536,
+    },
+  },
   palette: {
     primary: {
       main: COLORS.primary,

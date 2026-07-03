@@ -1,6 +1,6 @@
 //As long as main-server stays reachable on the same host as the web app, just on
 // its own port.
-const { protocol, hostname, host } = window.location;
+const { protocol, host } = window.location;
 const API_URL = `${protocol}//${host}/api`;
 const WS_URL = `${protocol === 'https:' ? 'wss' : 'ws'}://${host}/ws/ships`;
 const RECONNECT_DELAY_MS = 3000;
