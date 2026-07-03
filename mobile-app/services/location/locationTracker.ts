@@ -26,11 +26,29 @@ export class LocationTracker {
   private userEmail = '';
   private shipType = '';
   private onUpdate: ((update: TrackerUpdate) => void) | null = null;
+  private stateListeners = new Set<(isTracking: boolean) => void>();
 
   constructor() {
     // Resync as soon as the app comes back to the foreground, instead of
     // waiting for the next periodic location update to notice we're offline.
     AppState.addEventListener('change', this.handleAppStateChange);
+  }
+
+  private setState(state: TrackerState) {
+    this.trackerState = state;
+    const isTracking = !(state instanceof NotSendingState);
+    this.stateListeners.forEach((listener) => listener(isTracking));
+  }
+
+  // Lets the UI react immediately to tracking on/off transitions (e.g. to
+  // disable Settings while tracking, since switching ships mid-tracking
+  // stops it anyway).
+  public subscribeToState(listener: (isTracking: boolean) => void): () => void {
+    this.stateListeners.add(listener);
+    listener(!(this.trackerState instanceof NotSendingState));
+    return () => {
+      this.stateListeners.delete(listener);
+    };
   }
 
   private handleAppStateChange = (nextState: AppStateStatus) => {
@@ -46,7 +64,7 @@ export class LocationTracker {
       return true;
     } catch (error) {
       console.warn("Couldn't connect to MQTT, switching to local DB");
-      this.trackerState = this.sendingLocalState;
+      this.setState(this.sendingLocalState);
       toastService.show('savingLocally');
       return false;
     }
@@ -65,7 +83,7 @@ export class LocationTracker {
       return false;
     }
 
-    this.trackerState = this.sendingState;
+    this.setState(this.sendingState);
     return true;
   }
 
@@ -95,7 +113,7 @@ export class LocationTracker {
   }
 
   public setTrackerState(state: TrackerState) {
-    this.trackerState = state;
+    this.setState(state);
   }
   public getSendingLocalState() {
     return this.sendingLocalState;
@@ -129,7 +147,7 @@ export class LocationTracker {
     this.onUpdate = onUpdate;
 
     const connected = await this.connectMqtt();
-    this.trackerState = connected ? this.sendingState : this.sendingLocalState;
+    this.setState(connected ? this.sendingState : this.sendingLocalState);
 
     await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK_NAME, {
       accuracy: Location.Accuracy.BestForNavigation,
@@ -147,7 +165,7 @@ export class LocationTracker {
     if (await Location.hasStartedLocationUpdatesAsync(BACKGROUND_LOCATION_TASK_NAME)) {
       await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK_NAME);
     }
-    this.trackerState = this.notSendingState;
+    this.setState(this.notSendingState);
     mqttService.disconnect();
     this.onUpdate = null;
   }
