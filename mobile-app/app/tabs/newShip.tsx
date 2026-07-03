@@ -6,10 +6,13 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
+  StyleSheet,
 } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 
 import globalStyles, { COLORS } from '../styles';
 import useLanguage from '../../internazionalization/languageContext';
@@ -47,6 +50,7 @@ export default function NewShipScreen() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [shipId, setShipId] = useState('');
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [imageUri, setImageUri] = useState<string | null>(null);
   const [isFocus, setIsFocus] = useState(false);
   const [showOwnershipModal, setShowOwnershipModal] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -68,6 +72,7 @@ export default function NewShipScreen() {
     useCallback(() => {
       setShipId('');
       setSelectedType(null);
+      setImageUri(null);
       setShowShipIdError(false);
       setShowTypeError(false);
       setShowLocationError(false);
@@ -79,6 +84,19 @@ export default function NewShipScreen() {
       });
     }, []),
   );
+
+  const handlePickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.7,
+    });
+    if (result.canceled) return;
+
+    setImageUri(result.assets[0].uri);
+  };
 
   const handleOpenVerification = async () => {
     const missingShipId = !shipId.trim();
@@ -119,6 +137,9 @@ export default function NewShipScreen() {
       );
 
       if (result.success) {
+        if (imageUri) {
+          await mainServerService.uploadShipImage(shipId.trim(), imageUri);
+        }
         setSelectedShipId(shipId.trim());
         router.replace('/tabs/home');
       } else if (result.reason === 'location_permission') {
@@ -173,6 +194,19 @@ export default function NewShipScreen() {
           onBlur={() => setIsFocus(false)}
         />
 
+        <View style={photoStyles.row}>
+          <TouchableOpacity style={photoStyles.button} onPress={handlePickImage}>
+            <Text style={photoStyles.buttonText}>{strings.addShipPhoto}</Text>
+          </TouchableOpacity>
+          {imageUri && (
+            <Image
+              source={{ uri: imageUri }}
+              style={photoStyles.thumbnail}
+              resizeMode="cover"
+            />
+          )}
+        </View>
+
         {showLocationError && (
           <Text style={[styles.text, { color: COLORS.red }]}>
             {strings.locationPermissionError}
@@ -217,3 +251,32 @@ export default function NewShipScreen() {
     </ScrollView>
   );
 }
+
+const photoStyles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    width: '100%',
+    marginVertical: '3%',
+  },
+  button: {
+    backgroundColor: '#071D64',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  buttonText: {
+    color: '#E8EEFA',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  thumbnail: {
+    width: 90,
+    height: 90,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#071D64',
+  },
+});

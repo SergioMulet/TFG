@@ -104,6 +104,36 @@ class MainServerService {
       return { success: false, reason: 'error' };
     }
   }
+
+  // Uploads (or replaces) a ship's photo. Failure here shouldn't block
+  // registration, which has already succeeded by the time this is called.
+  async uploadShipImage(shipId: string, imageUri: string): Promise<boolean> {
+    try {
+      const token = await authContextManager.getToken();
+
+      const extensionMatch = /\.(\w+)$/.exec(imageUri);
+      const extension = extensionMatch ? extensionMatch[1].toLowerCase() : 'jpg';
+      const mimeType = extension === 'png' ? 'image/png' : extension === 'webp' ? 'image/webp' : 'image/jpeg';
+
+      const formData = new FormData();
+      formData.append('image', {
+        uri: imageUri,
+        name: `ship.${extension}`,
+        type: mimeType,
+      } as unknown as Blob);
+
+      const response = await fetch(`${API_URL}/ships/${encodeURIComponent(shipId)}/image`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error('Error uploading ship image: ', error);
+      return false;
+    }
+  }
 }
 
 export const mainServerService = new MainServerService();
