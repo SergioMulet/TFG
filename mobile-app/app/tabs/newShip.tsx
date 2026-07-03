@@ -197,8 +197,8 @@ export default function NewShipScreen() {
           {imageUri ? (
             <Image
               source={{ uri: imageUri }}
-              style={{ width: '100%', height: 160, borderRadius: 10 }}
-              resizeMode="cover"
+              style={{ width: '100%', height: '100%', borderRadius: 10 }}
+              resizeMode="contain"
             />
           ) : (
             <Text style={styles.text}>{strings.addShipPhoto}</Text>

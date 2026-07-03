@@ -1,4 +1,4 @@
-export type ToastKey = 'syncingData' | 'savingLocally';
+export type ToastKey = 'syncingData' | 'savingLocally' | 'imageUploadError';
 
 type Listener = (key: ToastKey) => void;
 
