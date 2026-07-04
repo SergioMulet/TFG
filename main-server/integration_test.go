@@ -1,5 +1,3 @@
-//go:build integration
-
 package main_test
 
 import (
@@ -15,10 +13,10 @@ import (
 	"testing"
 	"time"
 
+	paho "github.com/eclipse/paho.mqtt.golang"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
-	paho "github.com/eclipse/paho.mqtt.golang"
 	supabase "github.com/supabase-community/supabase-go"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -41,13 +39,13 @@ var (
 	mqttPub    paho.Client
 )
 
-// ── TestMain — spin up containers, wire infrastructure ────────────────────────
+// TestMain — spin up containers, wire infrastructure
 
 func TestMain(m *testing.M) {
 	ctx := context.Background()
 	gin.SetMode(gin.TestMode)
 
-	// ── InfluxDB 2.x ─────────────────────────────────────────────────────────
+	// InfluxDB
 	influxC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
 			Image:        "influxdb:2.7",
@@ -75,7 +73,7 @@ func TestMain(m *testing.M) {
 	influxMapped, _ := influxC.MappedPort(ctx, "8086/tcp")
 	influxURL := fmt.Sprintf("http://%s:%s", influxHost, influxMapped.Port())
 
-	// ── Mosquitto 2.x ─────────────────────────────────────────────────────────
+	// Mosquitto
 	mosquittoC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
 			Image:        "eclipse-mosquitto:2",
@@ -99,7 +97,7 @@ func TestMain(m *testing.M) {
 	mqttMapped, _ := mosquittoC.MappedPort(ctx, "1883/tcp")
 	mqttBroker := fmt.Sprintf("tcp://%s:%s", mqttHost, mqttMapped.Port())
 
-	// ── InfluxDB client ───────────────────────────────────────────────────────
+	// InfluxDB client
 	os.Setenv("INFLUX_ORG", influxOrg)
 	os.Setenv("INFLUX_BUCKET", influxBucket)
 	repositories.Infra.Influx = influxdb2.NewClientWithOptions(
@@ -108,18 +106,18 @@ func TestMain(m *testing.M) {
 	)
 	defer repositories.Infra.Influx.Close()
 
-	// ── MQTT subscriber ───────────────────────────────────────────────────────
+	// MQTT subscriber
 	subClient, err := mqttpkg.Connect(mqttBroker, "integration-subscriber")
 	if err != nil {
 		log.Fatalf("MQTT subscriber connect: %v", err)
 	}
 	defer subClient.Disconnect(250)
 
-	// ── MQTT publisher (test helper) ──────────────────────────────────────────
+	// MQTT publisher (test helper)
 	mqttPub = newMQTTPub(mqttBroker, "integration-publisher")
 	defer mqttPub.Disconnect(250)
 
-	// ── Mock Supabase server ──────────────────────────────────────────────────
+	// Mock Supabase server
 	supaServer := newMockSupabaseServer()
 	defer supaServer.Close()
 	supaClient, err := supabase.NewClient(supaServer.URL, "mock-anon-key", nil)
@@ -128,13 +126,13 @@ func TestMain(m *testing.M) {
 	}
 	repositories.Infra.Supabase = supaClient
 
-	// ── Router ────────────────────────────────────────────────────────────────
+	// Router
 	testRouter = buildRouter(supaClient)
 
 	os.Exit(m.Run())
 }
 
-// ── Setup helpers ─────────────────────────────────────────────────────────────
+// Setup helpers
 
 func buildRouter(supaClient *supabase.Client) *gin.Engine {
 	r := gin.New()
@@ -191,7 +189,7 @@ func newMockSupabaseServer() *httptest.Server {
 	}))
 }
 
-// ── Per-test helpers ──────────────────────────────────────────────────────────
+// Per-test helpers
 
 // uniqueID returns a collision-free identifier prefixed with prefix.
 func uniqueID(prefix string) string {
@@ -244,9 +242,9 @@ func syncRequest(t *testing.T, payloads []repositories.TelemetryPayload) *httpte
 	return w
 }
 
-// ── Integration tests ─────────────────────────────────────────────────────────
+// Integration tests
 
-// TestMQTTIngestion verifies the path: MQTT publish → subscriber → InfluxDB.
+// TestMQTTIngestion verifies the path: MQTT publish -> subscriber -> InfluxDB.
 func TestMQTTIngestion(t *testing.T) {
 	shipId := uniqueID("mqtt-ship")
 	payload := repositories.TelemetryPayload{
@@ -273,7 +271,7 @@ func TestMQTTIngestion(t *testing.T) {
 	}
 }
 
-// TestRESTSync verifies the path: POST /api/telemetry/sync → repository → InfluxDB.
+// TestRESTSync verifies the path: POST /api/telemetry/sync -> repository -> InfluxDB.
 func TestRESTSync(t *testing.T) {
 	shipId := uniqueID("rest-ship")
 	payload := repositories.TelemetryPayload{
