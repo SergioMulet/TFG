@@ -8,7 +8,7 @@ async function routeWS(page) {
   });
 }
 
-// ── 1. Real-time rendering ────────────────────────────────────────────────────
+// 1. Real-time rendering
 
 test('dashboard renders ships received over WebSocket', async ({ page }) => {
   await routeWS(page);
@@ -23,7 +23,7 @@ test('dashboard renders ships received over WebSocket', async ({ page }) => {
   await expect(page.getByText('Total ships: 3')).toBeVisible();
 });
 
-// ── 2. Ship selection → details panel + route ─────────────────────────────────
+// 2. Ship selection -> details panel + route
 
 test('selecting a ship shows its details and can draw its route', async ({ page }) => {
   await routeWS(page);
@@ -53,7 +53,7 @@ test('selecting a ship shows its details and can draw its route', async ({ page 
   await expect(page.locator('.leaflet-overlay-pane path').first()).toBeVisible();
 });
 
-// ── 3. Type filter ────────────────────────────────────────────────────────────
+// 3. Type filter
 
 test('unchecking a ship type hides its markers and restores them on re-check', async ({
   page,
@@ -77,7 +77,7 @@ test('unchecking a ship type hides its markers and restores them on re-check', a
   await expect(page.locator('[aria-label="cargo-001"]')).toBeVisible();
 });
 
-// ── 4. Search ─────────────────────────────────────────────────────────────────
+// 4. Search
 
 test('search finds a ship by partial ID and opens the details panel', async ({
   page,
@@ -112,7 +112,7 @@ test('search finds a ship by partial ID and opens the details panel', async ({
   await expect(page.getByText('tanker-001')).toBeVisible();
 });
 
-// ── 5. Admin view ─────────────────────────────────────────────────────────────
+// 5. Admin view
 
 test('admin view shows the embedded Grafana iframe', async ({ page }) => {
   await routeWS(page);
@@ -128,7 +128,7 @@ test('admin view shows the embedded Grafana iframe', async ({ page }) => {
   expect(src).toContain('grafana');
 });
 
-// ── 6. WebSocket reconnect ────────────────────────────────────────────────────
+// 6. WebSocket reconnect
 
 test('client reconnects automatically after a server-side WebSocket drop', async ({
   page,
@@ -150,7 +150,7 @@ test('client reconnects automatically after a server-side WebSocket drop', async
   // Ships are visible from the first connection.
   await expect(page.locator('[aria-label="cargo-001"]')).toBeVisible();
 
-  // shipService waits 3 s before reconnecting; allow 4 s total for safety.
+  // shipService waits 3 s before reconnecting; 4s for safety.
   await page.waitForTimeout(4000);
 
   expect(connectionCount).toBeGreaterThanOrEqual(2);
