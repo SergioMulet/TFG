@@ -1,0 +1,44 @@
+appId: com.sergiokma15.mobileapp
+---
+# Prerequisites: logged-in account with at least one registered ship.
+# This is a semi-automated flow: at the marked step the tester must manually
+# toggle airplane mode on the device.
+# Run: maestro test .maestro/03_sync_notification.yaml -e E2E_EMAIL=... -e E2E_PASSWORD=...
+#
+# Asserts:
+#  - going offline while tracking shows the "saving locally" toast
+#  - coming back online triggers the "syncing" toast
+
+- launchApp:
+    clearState: true
+
+# ── Login ────────────────────────────────────────────────────────────────────
+- tapOn: "Email"
+- inputText: "${E2E_EMAIL}"
+- tapOn: "Password"
+- inputText: "${E2E_PASSWORD}"
+- tapOn:
+    text: "Log in"
+    index: 1
+- assertVisible: "Ship"
+
+# ── Start tracking ───────────────────────────────────────────────────────────
+- assertVisible: "Tracking disabled"
+- tapOn:
+    type: Switch
+- assertVisible: "Sending coordinates"
+
+# ── MANUAL STEP: enable airplane mode on the device now ──────────────────────
+# The toast has a 3-second visible window; the assertion polls for up to 20 s
+# to give the tester time to act.
+- assertVisible:
+    text: "Connection lost. Saving coordinates locally."
+    timeout: 20000
+
+# ── MANUAL STEP: disable airplane mode on the device now ─────────────────────
+- assertVisible:
+    text: "Syncing data with the server..."
+    timeout: 20000
+
+# Tracking is still active after the reconnect
+- assertVisible: "Sending coordinates"

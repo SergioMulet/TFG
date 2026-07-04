@@ -1,0 +1,26 @@
+appId: com.sergiokma15.mobileapp
+---
+# Prerequisites: none (runs from the login screen, no account needed).
+# Run: maestro test .maestro/04_language_switch.yaml
+#
+# Asserts: switching between English and Spanish updates all visible UI strings.
+
+- launchApp:
+    clearState: true
+
+# ── Default language is English ───────────────────────────────────────────────
+- assertVisible: "Log in"
+- assertVisible: "🇪🇸"
+- assertVisible: "🇬🇧"
+
+# ── Switch to Spanish ─────────────────────────────────────────────────────────
+- tapOn: "🇪🇸"
+- assertVisible: "Iniciar sesión"   # strings.login in Spanish
+- assertVisible: "Correo electrónico"
+- assertNotVisible: "Log in"
+
+# ── Switch back to English ────────────────────────────────────────────────────
+- tapOn: "🇬🇧"
+- assertVisible: "Log in"
+- assertVisible: "Email"
+- assertNotVisible: "Iniciar sesión"

@@ -1,0 +1,40 @@
+appId: com.sergiokma15.mobileapp
+---
+# Prerequisites: logged-in account with at least one registered ship.
+# Run: maestro test .maestro/02_tracking.yaml -e E2E_EMAIL=... -e E2E_PASSWORD=...
+#
+# Asserts: start-tracking toggle turns the GPS on, stop-tracking turns it off.
+
+- launchApp:
+    clearState: true
+
+# ── Login ────────────────────────────────────────────────────────────────────
+- tapOn: "Email"
+- inputText: "${E2E_EMAIL}"
+- tapOn: "Password"
+- inputText: "${E2E_PASSWORD}"
+- tapOn:
+    text: "Log in"
+    index: 1
+- assertVisible: "Ship"
+
+# ── Home screen shows the ship and the tracking switch ───────────────────────
+- assertVisible: "Tracking disabled"
+
+# ── Start tracking ───────────────────────────────────────────────────────────
+- tapOn:
+    type: Switch
+- assertVisible: "Sending coordinates"
+
+# While tracking, the Settings tab is locked (tabPress is suppressed) — verify:
+- tapOn: "Settings"
+- assertNotVisible: "My ships"    # still on home screen
+
+# ── Stop tracking ────────────────────────────────────────────────────────────
+- tapOn:
+    type: Switch
+- assertVisible: "Tracking disabled"
+
+# Settings tab is accessible again after stopping
+- tapOn: "Settings"
+- assertVisible: "My ships"

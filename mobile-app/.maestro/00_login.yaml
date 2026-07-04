@@ -1,0 +1,29 @@
+appId: com.sergiokma15.mobileapp
+---
+# Prerequisites: app installed on device/emulator, Supabase test account exists.
+# Run: maestro test .maestro/00_login.yaml -e E2E_EMAIL=... -e E2E_PASSWORD=...
+#
+# Asserts: a user can authenticate with email and password.
+
+- launchApp:
+    clearState: true
+
+# Login screen is visible
+- assertVisible: "Log in"
+- assertVisible: "Email"
+- assertVisible: "Password"
+
+# Enter credentials
+- tapOn: "Email"
+- inputText: "${E2E_EMAIL}"
+
+- tapOn: "Password"
+- inputText: "${E2E_PASSWORD}"
+
+# Submit — index 1 because the title text also reads "Log in"
+- tapOn:
+    text: "Log in"
+    index: 1
+
+# After a successful login the app navigates to the tab bar
+- assertVisible: "Ship"       # tab label in the bottom bar
