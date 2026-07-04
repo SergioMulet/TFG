@@ -1,0 +1,191 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # 1. Unit tests
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: main-server/go.mod
+          cache-dependency-path: main-server/go.sum
+
+      - name: Run unit tests
+        working-directory: main-server
+        run: go test ./...
+
+  # 2. Integration tests (Docker containers)
+  integration-tests:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: main-server/go.mod
+          cache-dependency-path: main-server/go.sum
+
+      - name: Run integration tests
+        working-directory: main-server
+        # testcontainers-go starts disposable InfluxDB 2.7 + Mosquitto 2
+        # containers. Docker is pre-installed on ubuntu-latest runners.
+        run: go test -tags integration -v -timeout 5m .
+
+  # 3. E2E tests (web application — Playwright / Chromium + real backend)
+  e2e-tests:
+    name: E2E tests (web)
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- Backend stack ---
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: main-server/go.mod
+          cache-dependency-path: main-server/go.sum
+
+      - name: Start InfluxDB and Mosquitto
+        run: docker compose -f main-server/docker-compose.e2e.yml up -d
+
+      - name: Wait for InfluxDB
+        run: |
+          echo "Waiting for InfluxDB..."
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8086/health && echo "InfluxDB ready" && break
+            sleep 3
+          done
+
+      - name: Build Go backend
+        working-directory: main-server
+        run: go build -o backend_e2e .
+
+      - name: Start Go backend
+        working-directory: main-server
+        env:
+          INFLUX_URL: http://localhost:8086
+          INFLUX_ORG: e2eorg
+          INFLUX_BUCKET: e2ebucket
+          INFLUX_TOKEN: e2e-test-token
+          MQTT_BROKER: tcp://localhost:1883
+          SUPABASE_URL: http://localhost:9999
+          SUPABASE_SECRET_KEY: dummy
+          PORT: "8080"
+        run: nohup ./backend_e2e > /tmp/backend_e2e.log 2>&1 &
+
+      - name: Wait for backend
+        run: |
+          echo "Waiting for backend..."
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8080/health && echo "Backend ready" && break
+            sleep 2
+          done
+
+      # --- Frontend + Playwright ---
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: web-application
+        run: npm install
+
+      - name: Install Playwright browsers
+        working-directory: web-application
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: web-application
+        run: npm run test:e2e
+
+      - name: Upload backend log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-e2e-log
+          path: /tmp/backend_e2e.log
+
+  # 4. Deploy backend — only on push to main, only if all test jobs pass
+  deploy-backend:
+    name: Deploy backend
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, e2e-tests]
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd TFG
+            git pull origin main
+            cd main-server
+            docker compose up -d --build
+
+  # 5. Deploy web — only on push to main, only if all test jobs pass
+  deploy-web:
+    name: Deploy web
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, e2e-tests]
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: web-application
+        run: npm install
+
+      - name: Build
+        working-directory: web-application
+        run: npm run build
+
+      # The VM is too resource-constrained to build the web app itself, so
+      # it's built here on the runner and only the static dist/ output is
+      # shipped over.
+      - name: Upload dist to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          source: 'web-application/dist/*'
+          target: '/home/${{ secrets.VM_USER }}/dist_new'
+          strip_components: 2
+          overwrite: true
+
+      - name: Publish to Nginx
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            sudo rm -rf /var/www/html/*
+            sudo cp -r ~/dist_new/* /var/www/html/
+            rm -rf ~/dist_new
+            sudo chown -R www-data:www-data /var/www/html
+            sudo systemctl restart nginx

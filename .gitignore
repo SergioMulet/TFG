@@ -7,6 +7,7 @@ mobile-app/.env
 
 # Main server
 main-server/.env
+main-server/backend_e2e
 
 # Web application
 web-application/node_modules/

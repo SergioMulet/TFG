@@ -1,0 +1,21 @@
+# Lightweight stack for E2E tests: only the services the Go binary needs.
+# The Go backend itself runs natively on the CI runner (go build -o backend_e2e .).
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+
+  influxdb:
+    image: influxdb:2.7
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: password12
+      DOCKER_INFLUXDB_INIT_ORG: e2eorg
+      DOCKER_INFLUXDB_INIT_BUCKET: e2ebucket
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: e2e-test-token
