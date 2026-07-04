@@ -37,20 +37,23 @@ test('selecting a ship shows its details and can draw its route', async ({ page 
   // Select via the search bar (more reliable than clicking a map marker).
   const search = page.getByRole('textbox', { name: 'Search ship ID...' });
   await search.fill('cargo');
-  await page.getByRole('button', { name: 'cargo-001' }).click();
+  await page.getByRole('banner').getByRole('button', { name: 'cargo-001' }).click();
 
   // Details panel header appears immediately on selection.
   await expect(page.getByText("Ship's details")).toBeVisible();
 
   // Wait for the async /api/ships/cargo-001 call to populate the panel.
   await expect(page.getByText('cargo-001')).toBeVisible();
-  await expect(page.getByText('Cargo')).toBeVisible(); // translated ship type
+  await expect(page.getByText('Cargo', { exact: true })).toBeVisible(); // translated ship type
 
   // Click "Display route" — the mocked details include 3 route points.
   await page.getByRole('button', { name: 'Display route' }).click();
 
-  // Leaflet renders polyline segments as <path> elements inside the overlay pane.
-  await expect(page.locator('.leaflet-overlay-pane path').first()).toBeVisible();
+  // Leaflet renders the route as <path> elements inside an SVG overlay.
+  // Check the SVG container (has real dimensions) rather than the path itself
+  // (SVG paths have no box, so toBeVisible() always fails on them).
+  await expect(page.locator('.leaflet-overlay-pane svg')).toBeVisible();
+  await expect(page.locator('.leaflet-overlay-pane path').first()).toHaveAttribute('d', /.+/);
 });
 
 // 3. Type filter
@@ -103,9 +106,10 @@ test('search finds a ship by partial ID and opens the details panel', async ({
   await search.fill('tanker');
 
   // Dropdown shows the matching ship.
-  await expect(page.getByRole('button', { name: 'tanker-001' })).toBeVisible();
+  const banner = page.getByRole('banner');
+  await expect(banner.getByRole('button', { name: 'tanker-001' })).toBeVisible();
 
-  await page.getByRole('button', { name: 'tanker-001' }).click();
+  await banner.getByRole('button', { name: 'tanker-001' }).click();
 
   // Details panel opens.
   await expect(page.getByText("Ship's details")).toBeVisible();
