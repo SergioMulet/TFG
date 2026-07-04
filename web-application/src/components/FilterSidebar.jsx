@@ -3,7 +3,6 @@ import {
   Typography,
   List,
   ListItem,
-  ListItemButton,
   Box,
   ListItemText,
   IconButton,
@@ -87,22 +86,31 @@ export default function FilterSidebar({ selectedTypes, setSelectedTypes }) {
           title={!expanded ? (lang === 'es' ? 'Todos' : 'All') : ''}
           placement="right"
         >
-          <ListItem disablePadding>
-            <ListItemButton onClick={handleToggleAll} sx={{ px: 1, minHeight: 40 }}>
-              <ListItemIcon sx={{ minWidth: 0, mr: expanded ? 2 : 'auto' }}>
-                <Checkbox
-                  edge="start"
-                  checked={isAllSelected}
-                  indeterminate={
-                    SHIP_KEYS.some((k) => selectedTypes[k]) && !isAllSelected
-                  }
-                  disableRipple
-                  size="small"
-                  slotProps={{ input: { 'aria-label': strings.allShips } }}
-                />
-              </ListItemIcon>
-              <ListItemText primary={strings.allShips} />
-            </ListItemButton>
+          <ListItem
+            disablePadding
+            component="label"
+            sx={{
+              px: 1,
+              minHeight: 40,
+              cursor: 'pointer',
+              borderRadius: 1,
+              '&:hover': { backgroundColor: 'action.hover' },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: expanded ? 2 : 'auto' }}>
+              <Checkbox
+                edge="start"
+                checked={isAllSelected}
+                indeterminate={
+                  SHIP_KEYS.some((k) => selectedTypes[k]) && !isAllSelected
+                }
+                onChange={handleToggleAll}
+                disableRipple
+                size="small"
+                slotProps={{ input: { 'aria-label': strings.allShips } }}
+              />
+            </ListItemIcon>
+            <ListItemText primary={strings.allShips} />
           </ListItem>
         </Tooltip>
 
@@ -113,28 +121,33 @@ export default function FilterSidebar({ selectedTypes, setSelectedTypes }) {
         {/* Ship types */}
         {SHIP_TYPES.map((type) => (
           <Tooltip title={!expanded ? type.label : ''} placement="right" key={type.value}>
-            <ListItem disablePadding>
-              <ListItemButton
-                onClick={() => handleToggle(type.value)}
-                sx={{ px: 1, minHeight: 40 }}
-              >
-                <ListItemIcon sx={{ minWidth: 0, mr: expanded ? 2 : 'auto' }}>
-                  <Checkbox
-                    edge="start"
-                    checked={selectedTypes[type.value]}
-                    disableRipple
-                    size="small"
-                    slotProps={{ input: { 'aria-label': type.label } }}
-                  />
-                  {/* Icon */}
-                  <Box
-                    sx={{ display: 'flex', alignItems: 'center', mr: !expanded ? 1 : 0 }}
-                  >
-                    <ShipShapeIcon color={type.color} />
-                  </Box>
-                </ListItemIcon>
-                {expanded && <ListItemText primary={type.label} variant="h3" />}
-              </ListItemButton>
+            <ListItem
+              disablePadding
+              component="label"
+              sx={{
+                px: 1,
+                minHeight: 40,
+                cursor: 'pointer',
+                borderRadius: 1,
+                '&:hover': { backgroundColor: 'action.hover' },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 0, mr: expanded ? 2 : 'auto' }}>
+                <Checkbox
+                  edge="start"
+                  checked={selectedTypes[type.value]}
+                  onChange={() => handleToggle(type.value)}
+                  disableRipple
+                  size="small"
+                  slotProps={{ input: { 'aria-label': type.label } }}
+                />
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', mr: !expanded ? 1 : 0 }}
+                >
+                  <ShipShapeIcon color={type.color} />
+                </Box>
+              </ListItemIcon>
+              {expanded && <ListItemText primary={type.label} variant="h3" />}
             </ListItem>
           </Tooltip>
         ))}
