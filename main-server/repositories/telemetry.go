@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -72,15 +73,21 @@ func newTelemetryPoint(data TelemetryPayload) *write.Point {
 	)
 }
 
-// WriteTelemetryPoints writes a batch of telemetry payloads to InfluxDB.
+// WriteTelemetryPoints writes a batch of telemetry payloads to InfluxDB
+// synchronously; callers can query the data as soon as this returns.
 func WriteTelemetryPoints(payloads []TelemetryPayload) {
-	org, bucket := influxOrgBucket()
-	writeAPI := Infra.Influx.WriteAPI(org, bucket)
-
-	for _, payload := range payloads {
-		writeAPI.WritePoint(newTelemetryPoint(payload))
+	if len(payloads) == 0 {
+		return
 	}
-	writeAPI.Flush()
+	org, bucket := influxOrgBucket()
+	writeAPI := Infra.Influx.WriteAPIBlocking(org, bucket)
+	points := make([]*write.Point, len(payloads))
+	for i, p := range payloads {
+		points[i] = newTelemetryPoint(p)
+	}
+	if err := writeAPI.WritePoint(context.Background(), points...); err != nil {
+		log.Printf("⚠️ Error writing telemetry points: %v", err)
+	}
 }
 
 // WriteTelemetryPoint writes a single telemetry payload to InfluxDB.
