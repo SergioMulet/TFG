@@ -96,6 +96,8 @@ export function useAuthForm() {
         setShowPasswordError(true);
         if (result.accountExists) {
           setAccountAlreadyExists(true);
+        } else if (result.error?.message) {
+          Alert.alert(strings.error, result.error.message);
         }
         return;
       }

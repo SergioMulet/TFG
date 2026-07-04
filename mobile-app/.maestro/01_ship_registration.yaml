@@ -1,0 +1,57 @@
+appId: com.sergiokma15.mobileapp
+---
+# Prerequisites: logged-in account with NO ship registered yet (fresh account or
+# deleted ships).  Use a unique ship ID per run to avoid the duplicate-ship error.
+# Run: maestro test .maestro/01_ship_registration.yaml \
+#        -e E2E_EMAIL=... -e E2E_PASSWORD=... -e E2E_SHIP_ID=test-cargo-001
+#
+# Asserts: ship registration form validates, ownership modal appears, and after
+# confirming the simulated verification the app returns to the home screen.
+
+- launchApp:
+    clearState: true
+
+# ── Login ────────────────────────────────────────────────────────────────────
+- tapOn: 'Email'
+- inputText: '${E2E_EMAIL}'
+- tapOn: 'Password'
+- inputText: '${E2E_PASSWORD}'
+- tapOn:
+    text: 'Log in'
+    index: 1
+- assertVisible: 'Ship'
+
+# ── Navigate to Settings → Add new ship ──────────────────────────────────────
+- tapOn: 'Settings'
+- assertVisible: 'My ships'
+- tapOn: 'Add new ship'
+- assertVisible: 'Register new ship'
+
+# ── Fill in ship ID ───────────────────────────────────────────────────────────
+- tapOn: 'Ship ID'
+- inputText: '${E2E_SHIP_ID}'
+
+# ── Choose ship type from the dropdown ───────────────────────────────────────
+- tapOn: 'Choose ship type'
+- tapOn: 'Cargo' # select the first type
+
+# ── Submit (without a photo) ─────────────────────────────────────────────────
+- tapOn: 'Register ship'
+
+# ── Ownership verification modal ─────────────────────────────────────────────
+# The modal always appears the first time a ship is registered.
+- assertVisible: 'Verify boat ownership'
+- assertVisible: '${E2E_SHIP_ID}'
+- assertVisible: 'Select PDF document'
+
+# Select any PDF on the device (opens native picker — manual interaction point).
+# After a file is picked, the "Verify ownership" button becomes enabled.
+- tapOn: 'Select PDF document'
+# NOTE: manually select any PDF in the native document picker, then
+# the flow continues automatically.
+
+- tapOn: 'Verify ownership'
+
+# ── App redirects back to home screen with the new ship ──────────────────────
+- assertVisible: '${E2E_SHIP_ID}'
+- assertVisible: 'Tracking disabled'
