@@ -44,7 +44,7 @@ jobs:
         # containers. Docker is pre-installed on ubuntu-latest runners.
         run: go test -tags integration -v -timeout 5m .
 
-  # 3. E2E tests (web application — Playwright / Chromium)
+  # 3. E2E tests (web application — Playwright / Chromium + real backend)
   e2e-tests:
     name: E2E tests (web)
     runs-on: ubuntu-latest
@@ -53,11 +53,54 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # --- Backend stack ---
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: main-server/go.mod
+          cache-dependency-path: main-server/go.sum
+
+      - name: Start InfluxDB and Mosquitto
+        run: docker compose -f main-server/docker-compose.e2e.yml up -d
+
+      - name: Wait for InfluxDB
+        run: |
+          echo "Waiting for InfluxDB..."
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8086/health && echo "InfluxDB ready" && break
+            sleep 3
+          done
+
+      - name: Build Go backend
+        working-directory: main-server
+        run: go build -o backend_e2e .
+
+      - name: Start Go backend
+        working-directory: main-server
+        env:
+          INFLUX_URL: http://localhost:8086
+          INFLUX_ORG: e2eorg
+          INFLUX_BUCKET: e2ebucket
+          INFLUX_TOKEN: e2e-test-token
+          MQTT_BROKER: tcp://localhost:1883
+          SUPABASE_URL: http://localhost:9999
+          SUPABASE_SECRET_KEY: dummy
+          PORT: "8080"
+        run: nohup ./backend_e2e > /tmp/backend_e2e.log 2>&1 &
+
+      - name: Wait for backend
+        run: |
+          echo "Waiting for backend..."
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8080/health && echo "Backend ready" && break
+            sleep 2
+          done
+
+      # --- Frontend + Playwright ---
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: web-application/package-lock.json
 
       - name: Install dependencies
         working-directory: web-application
@@ -70,6 +113,13 @@ jobs:
       - name: Run E2E tests
         working-directory: web-application
         run: npm run test:e2e
+
+      - name: Upload backend log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-e2e-log
+          path: /tmp/backend_e2e.log
 
   # 4. Deploy backend — only on push to main, only if all test jobs pass
   deploy-backend:
