@@ -11,3 +11,6 @@ main-server/backend_e2e
 
 # Web application
 web-application/node_modules/
+
+# Load tests
+load-tests/mqtt/node_modules
