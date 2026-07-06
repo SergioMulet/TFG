@@ -18,7 +18,7 @@ export default function Dashboard() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const [selectedShipId, setSelectedShipId] = useState(import.meta.env.DEV ? 'Test1234' : null);
+  const [selectedShipId, setSelectedShipId] = useState(null);
   const [ships, setShips] = useState([]);
   const [displayedRoute, setDisplayedRoute] = useState(null);
   const [view, setView] = useState('map');
