@@ -14,7 +14,11 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
   const { lang } = useLanguage();
   const strings = translations[lang];
 
-  const [shipDetails, setShipDetails] = useState({});
+  const devMock = import.meta.env.DEV
+    ? { ship_id: 'Test1234', type: 'fishing', lat: 43.6842, lng: -6.1054, image_url: null, country: 'ES' }
+    : {};
+
+  const [shipDetails, setShipDetails] = useState(devMock);
   const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
@@ -70,16 +74,20 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
           Storage doesn't guarantee the object exists, so fall back silently
           on load error). */}
       {shipDetails.image_url && !imageFailed && (
-        <Box sx={{ ...cardSx, p: 0, height: IMAGE_HEIGHT, overflow: 'hidden' }}>
+        <Box
+          sx={{
+            height: IMAGE_HEIGHT,
+            flexShrink: 0,
+            borderRadius: '16px',
+            overflow: 'hidden',
+            mb: { xs: 1, sm: 3 },
+            backgroundColor: 'secondary.main',
+          }}
+        >
           <img
             src={shipDetails.image_url}
             alt={shipDetails.ship_id}
-            style={{
-              width: '100%',
-              height: '100%',
-              display: 'block',
-              objectFit: 'contain',
-            }}
+            style={{ width: '100%', height: '100%', display: 'block', objectFit: 'contain' }}
             onError={() => setImageFailed(true)}
           />
         </Box>

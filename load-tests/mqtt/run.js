@@ -4,16 +4,33 @@
 //
 // Usage (from repo root):
 //   node load-tests/mqtt/run.js
-//
-// Override broker:
-//   MQTT_BROKER_URL=wss://other-host/mqtt node load-tests/mqtt/run.js
 
 import mqtt from 'mqtt';
 
 const BROKER_URL =
   process.env.MQTT_BROKER_URL ||
   'wss://shipstracker.francecentral.cloudapp.azure.com/mqtt';
-const INTERVAL = 5000; // ms between publishes per client (realistic GPS rate)
+const INTERVAL = 5000; // ms between publishes per client
+
+// Bounding boxes that are entirely over open water.
+const OCEAN_ZONES = [
+  { minLat: 35, maxLat: 55, minLng: -58, maxLng: -15 }, // North Atlantic
+  { minLat: -40, maxLat: -8, minLng: -25, maxLng: 5 }, // South Atlantic
+  { minLat: 25, maxLat: 45, minLng: 155, maxLng: 175 }, // North Pacific (west)
+  { minLat: 25, maxLat: 45, minLng: -175, maxLng: -135 }, // North Pacific (east)
+  { minLat: -40, maxLat: -15, minLng: -150, maxLng: -90 }, // South Pacific
+  { minLat: -30, maxLat: 8, minLng: 55, maxLng: 75 }, // Indian Ocean
+  { minLat: 14, maxLat: 22, minLng: 60, maxLng: 66 }, // Arabian Sea
+  { minLat: 10, maxLat: 17, minLng: 86, maxLng: 91 }, // Bay of Bengal
+  { minLat: 15, maxLat: 19, minLng: -79, maxLng: -72 }, // Caribbean Sea
+  { minLat: 22, maxLat: 25, minLng: -93, maxLng: -87 }, // Gulf of Mexico
+  { minLat: 8, maxLat: 18, minLng: 111, maxLng: 117 }, // South China Sea
+  { minLat: -30, maxLat: -18, minLng: 156, maxLng: 168 }, // Tasman Sea
+  { minLat: 62, maxLat: 72, minLng: -5, maxLng: 10 }, // Norwegian Sea
+  { minLat: 34, maxLat: 37, minLng: 13, maxLng: 25 }, // Mediterranean
+];
+
+const SHIP_TYPES = ['cargo', 'tanker', 'cruise', 'fishing', 'yacht', 'tug'];
 
 const STAGES = [
   { target: 700, durationMs: 30_000 },
@@ -27,11 +44,13 @@ let connected = 0;
 const allClients = [];
 
 function spawnClient(i) {
-  const clientId = `load-boat-${i}`;
+  const clientId = `test-ship-${i}`;
   const topic = `maritime/boats/${clientId}-load@test.com/telemetry`;
-  // Distribute boats worldwide (prime-step spread across lat/lng ranges)
-  let lat = -60 + ((i * 73) % 130); // -60 to +70
-  let lng = -180 + ((i * 137) % 360); // -180 to +180
+  // Place each boat in one of the ocean zones using a prime-step spread.
+  const zone = OCEAN_ZONES[i % OCEAN_ZONES.length];
+  let lat = zone.minLat + ((i * 73) % (zone.maxLat - zone.minLat));
+  let lng = zone.minLng + ((i * 137) % (zone.maxLng - zone.minLng));
+  const shipType = SHIP_TYPES[i % SHIP_TYPES.length];
   // Each boat moves in a unique heading (~50 m per message)
   const dLat = 0.00045 * Math.cos((i * 37) % 360);
   const dLng = 0.00045 * Math.sin((i * 37) % 360);
@@ -51,7 +70,7 @@ function spawnClient(i) {
       const msg = JSON.stringify({
         ship_id: clientId,
         owner_email: 'load@test.com',
-        ship_type: 'cargo',
+        ship_type: shipType,
         latitude: lat,
         longitude: lng,
         timestamp: new Date().toISOString(),

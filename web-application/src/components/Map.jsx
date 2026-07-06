@@ -1,5 +1,12 @@
 import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker } from 'react-leaflet';
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  CircleMarker,
+} from 'react-leaflet';
 import { Box, useTheme } from '@mui/material';
 import L from 'leaflet';
 
@@ -38,7 +45,13 @@ function buildRouteSegments(positions) {
   });
 }
 
-export default function Map({ selectedShipId, onSelectShip, ships, route, selectedTypes }) {
+export default function Map({
+  selectedShipId,
+  onSelectShip,
+  ships,
+  route,
+  selectedTypes,
+}) {
   const theme = useTheme();
   const defaultPosition = [40.59, -3.91];
 
@@ -67,6 +80,11 @@ export default function Map({ selectedShipId, onSelectShip, ships, route, select
         zoom={4}
         minZoom={2}
         maxZoom={19}
+        maxBounds={[
+          [-90, -170],
+          [90, 190],
+        ]}
+        maxBoundsViscosity={1.0}
         style={{ width: '100%', height: '100%' }}
       >
         <TileLayer

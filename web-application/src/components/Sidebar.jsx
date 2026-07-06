@@ -9,6 +9,7 @@ import DetailsMobile from './DetailsMobile';
 export default function Sidebar({
   selectedShipId,
   onBackToFilters,
+  onClose,
   onDisplayRoute,
   selectedTypes,
   setSelectedTypes,
@@ -25,7 +26,7 @@ export default function Sidebar({
   }
 
   return isMobile ? (
-    <DetailsMobile shipId={selectedShipId} onBack={onBackToFilters} onDisplayRoute={onDisplayRoute} />
+    <DetailsMobile shipId={selectedShipId} onBack={onBackToFilters} onClose={onClose} onDisplayRoute={onDisplayRoute} />
   ) : (
     <DetailsSidebar
       shipId={selectedShipId}

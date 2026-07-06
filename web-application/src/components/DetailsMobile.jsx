@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Box, IconButton, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import RouteIcon from '@mui/icons-material/Route';
 
 import useLanguage from '../internationalization/LanguageContext';
@@ -9,7 +10,7 @@ import { shipLoader } from '../services/shipLoader';
 
 const IMAGE_HEIGHT = 140;
 
-export default function DetailsMobile({ shipId, onBack, onDisplayRoute }) {
+export default function DetailsMobile({ shipId, onBack, onClose, onDisplayRoute }) {
   const { lang } = useLanguage();
   const strings = translations[lang];
 
@@ -36,12 +37,15 @@ export default function DetailsMobile({ shipId, onBack, onDisplayRoute }) {
     <Box
       sx={{ backgroundColor: 'accent.main', height: '100%', p: 1.5, overflowY: 'auto' }}
     >
-      {/* Back */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+      {/* Header: back button + title + collapse */}
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
         <IconButton onClick={onBack} size="small" edge="start" aria-label={strings.back}>
           <ArrowBackIcon fontSize="small" />
         </IconButton>
-        <Typography variant="h3">{strings.shipDetails}</Typography>
+        <Typography variant="h3" sx={{ flexGrow: 1 }}>{strings.shipDetails}</Typography>
+        <IconButton onClick={onClose} size="small" edge="end" aria-label="collapse">
+          <KeyboardArrowDownIcon fontSize="small" />
+        </IconButton>
       </Box>
 
       {/* Ship photo, fixed size so it never grows the sidebar (Supabase
