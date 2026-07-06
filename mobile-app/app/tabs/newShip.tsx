@@ -18,8 +18,9 @@ import * as ImagePicker from 'expo-image-picker';
 import globalStyles, { COLORS } from '../styles';
 import useLanguage from '../../internazionalization/languageContext';
 import translations from '../../internazionalization/i18n';
+import { COUNTRIES } from '../../internazionalization/countries';
 import { useAutoDismiss } from '@/hooks/useAutoDismiss';
-import { supabase } from '@/services/supabaseClient';
+import { supabase, saveShipCountry } from '@/services/supabaseClient';
 import { mainServerService } from '@/services/mainServerService';
 import useSelectedShip from '@/hooks/selectedShipContext';
 import OwnershipVerificationModal from '@/components/ownershipVerificationModal';
@@ -51,10 +52,12 @@ export default function NewShipScreen() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [shipId, setShipId] = useState('');
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [imageAsset, setImageAsset] = useState<{ uri: string; mimeType?: string } | null>(
     null,
   );
   const [isFocus, setIsFocus] = useState(false);
+  const [isCountryFocus, setIsCountryFocus] = useState(false);
   const [showOwnershipModal, setShowOwnershipModal] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
 
@@ -75,6 +78,7 @@ export default function NewShipScreen() {
     useCallback(() => {
       setShipId('');
       setSelectedType(null);
+      setSelectedCountry(null);
       setImageAsset(null);
       setShowShipIdError(false);
       setShowTypeError(false);
@@ -140,9 +144,14 @@ export default function NewShipScreen() {
         shipId.trim(),
         selectedType!,
         userEmail,
+        selectedCountry ?? undefined,
       );
 
       if (result.success) {
+        console.log(selectedCountry);
+        if (selectedCountry) {
+          await saveShipCountry(shipId.trim(), selectedCountry);
+        }
         if (imageAsset) {
           const uploaded = await mainServerService.uploadShipImage(
             shipId.trim(),
@@ -205,6 +214,30 @@ export default function NewShipScreen() {
           value={selectedType}
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
+        />
+
+        <Dropdown
+          style={[
+            styles.boatCard,
+            isCountryFocus && { borderColor: COLORS.text, borderWidth: 2 },
+          ]}
+          placeholder={strings.chooseCountry}
+          placeholderStyle={styles.text}
+          containerStyle={styles.dropdownContainer}
+          activeColor={COLORS.cardBackground}
+          selectedTextStyle={styles.text}
+          itemTextStyle={styles.text}
+          maxHeight={250}
+          search
+          searchPlaceholder="Search..."
+          inputSearchStyle={styles.text}
+          data={COUNTRIES}
+          onChange={(item) => setSelectedCountry(item.value)}
+          labelField="label"
+          valueField="value"
+          value={selectedCountry}
+          onFocus={() => setIsCountryFocus(true)}
+          onBlur={() => setIsCountryFocus(false)}
         />
 
         <View style={photoStyles.row}>

@@ -68,6 +68,7 @@ const translations = {
     savingLocally: 'Connection lost. Saving coordinates locally.',
     addShipPhoto: 'Add ship photo (optional)',
     imageUploadError: 'The ship was registered, but the photo could not be uploaded.',
+    chooseCountry: 'Choose country (optional)',
   },
   es: {
     longitude: 'Longitud',
@@ -139,6 +140,7 @@ const translations = {
     savingLocally: 'Conexión perdida. Guardando coordenadas localmente.',
     addShipPhoto: 'Añadir foto del barco (opcional)',
     imageUploadError: 'El barco se registró, pero no se pudo subir la foto.',
+    chooseCountry: 'Elige el país (opcional)',
   },
 };
 
