@@ -70,6 +70,7 @@ class MainServerService {
     shipId: string,
     shipType: string,
     ownerEmail: string,
+    country?: string,
   ): Promise<RegisterShipResult> {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -90,6 +91,7 @@ class MainServerService {
             ship_id: shipId,
             owner_email: ownerEmail,
             ship_type: shipType,
+            country: country ?? null,
             longitude: position.coords.longitude,
             latitude: position.coords.latitude,
             timestamp: new Date(position.timestamp).toISOString(),
