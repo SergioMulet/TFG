@@ -1,10 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const SUPABASE_URL = 'https://hgjxsgldvybbqlxkrgsx.supabase.co';
-
-// It is ok to expose supabase publishable key, RLS is activated
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_syaWrkEn7m5sZQeK5F8fYg_mwbHoby_';
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+const SUPABASE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_SUPABASE_KEY!;
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import {
+  Alert,
   Text,
   View,
   TextInput,
@@ -50,7 +51,9 @@ export default function NewShipScreen() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [shipId, setShipId] = useState('');
   const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageAsset, setImageAsset] = useState<{ uri: string; mimeType?: string } | null>(
+    null,
+  );
   const [isFocus, setIsFocus] = useState(false);
   const [showOwnershipModal, setShowOwnershipModal] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -72,7 +75,7 @@ export default function NewShipScreen() {
     useCallback(() => {
       setShipId('');
       setSelectedType(null);
-      setImageUri(null);
+      setImageAsset(null);
       setShowShipIdError(false);
       setShowTypeError(false);
       setShowLocationError(false);
@@ -95,7 +98,10 @@ export default function NewShipScreen() {
     });
     if (result.canceled) return;
 
-    setImageUri(result.assets[0].uri);
+    setImageAsset({
+      uri: result.assets[0].uri,
+      mimeType: result.assets[0].mimeType ?? undefined,
+    });
   };
 
   const handleOpenVerification = async () => {
@@ -137,8 +143,15 @@ export default function NewShipScreen() {
       );
 
       if (result.success) {
-        if (imageUri) {
-          await mainServerService.uploadShipImage(shipId.trim(), imageUri);
+        if (imageAsset) {
+          const uploaded = await mainServerService.uploadShipImage(
+            shipId.trim(),
+            imageAsset.uri,
+            imageAsset.mimeType,
+          );
+          if (!uploaded) {
+            Alert.alert(strings.error, strings.imageUploadError);
+          }
         }
         setSelectedShipId(shipId.trim());
         router.replace('/tabs/home');
@@ -198,9 +211,9 @@ export default function NewShipScreen() {
           <TouchableOpacity style={photoStyles.button} onPress={handlePickImage}>
             <Text style={photoStyles.buttonText}>{strings.addShipPhoto}</Text>
           </TouchableOpacity>
-          {imageUri && (
+          {imageAsset && (
             <Image
-              source={{ uri: imageUri }}
+              source={{ uri: imageAsset.uri }}
               style={photoStyles.thumbnail}
               resizeMode="cover"
             />

@@ -69,7 +69,7 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
           Storage doesn't guarantee the object exists, so fall back silently
           on load error). */}
       {shipDetails.image_url && !imageFailed && (
-        <Box sx={{ ...cardSx, p: 0, height: IMAGE_HEIGHT, overflow: 'hidden' }}>
+        <Box sx={{ ...cardSx, p: 0, height: IMAGE_HEIGHT, overflow: 'hidden', border: 2, borderColor: 'secondary.main' }}>
           <img
             src={shipDetails.image_url}
             alt={shipDetails.ship_id}

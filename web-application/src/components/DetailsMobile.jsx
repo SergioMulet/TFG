@@ -52,6 +52,8 @@ export default function DetailsMobile({ shipId, onBack, onDisplayRoute }) {
             borderRadius: 2,
             overflow: 'hidden',
             mb: 1.5,
+            border: 2,
+            borderColor: 'secondary.main',
           }}
         >
           <img

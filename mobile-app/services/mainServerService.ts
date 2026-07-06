@@ -107,26 +107,42 @@ class MainServerService {
 
   // Uploads (or replaces) a ship's photo. Failure here shouldn't block
   // registration, which has already succeeded by the time this is called.
-  async uploadShipImage(shipId: string, imageUri: string): Promise<boolean> {
+  async uploadShipImage(
+    shipId: string,
+    imageUri: string,
+    mimeType?: string,
+  ): Promise<boolean> {
     try {
       const token = await authContextManager.getToken();
 
-      const extensionMatch = /\.(\w+)$/.exec(imageUri);
-      const extension = extensionMatch ? extensionMatch[1].toLowerCase() : 'jpg';
-      const mimeType = extension === 'png' ? 'image/png' : extension === 'webp' ? 'image/webp' : 'image/jpeg';
+      if (!mimeType) {
+        const extensionMatch = /\.(\w+)$/.exec(imageUri);
+        const extension = extensionMatch ? extensionMatch[1].toLowerCase() : 'jpg';
+        mimeType =
+          extension === 'png'
+            ? 'image/png'
+            : extension === 'webp'
+              ? 'image/webp'
+              : 'image/jpeg';
+      }
 
+      const ext =
+        mimeType === 'image/png' ? 'png' : mimeType === 'image/webp' ? 'webp' : 'jpg';
       const formData = new FormData();
       formData.append('image', {
         uri: imageUri,
-        name: `ship.${extension}`,
+        name: `ship.${ext}`,
         type: mimeType,
       } as unknown as Blob);
 
-      const response = await fetch(`${API_URL}/ships/${encodeURIComponent(shipId)}/image`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+      const response = await fetch(
+        `${API_URL}/ships/${encodeURIComponent(shipId)}/image`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        },
+      );
 
       return response.ok;
     } catch (error) {

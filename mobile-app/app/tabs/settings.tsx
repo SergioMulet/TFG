@@ -133,7 +133,7 @@ export default function SettingsScreen() {
                 {isDeleting ? (
                   <ActivityIndicator color={COLORS.background} />
                 ) : (
-                  <Ionicons name="trash-outline" size={24} color={COLORS.background} />
+                  <Ionicons name="trash-outline" size={24} color={COLORS.text} />
                 )}
               </TouchableOpacity>
             </View>
