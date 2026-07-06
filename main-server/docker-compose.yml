@@ -59,7 +59,7 @@ services:
       # Required to embed Grafana in an iframe (it sends X-Frame-Options: deny by default).
       - GF_SECURITY_ALLOW_EMBEDDING=true
       # Required when nginx proxies Grafana at /grafana/ subpath.
-      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
+      - GF_SERVER_ROOT_URL=https://shipstracker.francecentral.cloudapp.azure.com/grafana/
       - GF_SERVER_SERVE_FROM_SUB_PATH=true
       - INFLUX_URL=http://influxdb:8086
       - INFLUX_ORG=${INFLUX_ORG}

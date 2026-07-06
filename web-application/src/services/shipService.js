@@ -47,10 +47,21 @@ export const shipService = {
   async getShipDetails(shipId) {
     try {
       const response = await fetch(`${API_URL}/ships/${shipId}`);
-      if (!response.ok) throw new Error('Network repsonse was not ok');
+      if (!response.ok) throw new Error('Network response was not ok');
       return await response.json();
     } catch (error) {
       console.error('Error fetching ship details:', error);
+      return {};
+    }
+  },
+
+  async getShipRoute(shipId) {
+    try {
+      const response = await fetch(`${API_URL}/ships/${shipId}/route`);
+      if (!response.ok) throw new Error('Network response was not ok');
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching ship route:', error);
       return [];
     }
   },

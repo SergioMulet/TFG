@@ -163,6 +163,55 @@ func FetchAllShipPositions() ([]ShipPosition, error) {
 	return queryLatestPositions("-30d", "")
 }
 
+// FetchShipLatestPosition returns the most-recent position of a single ship
+// using last(), consistent with the WebSocket broadcast.
+func FetchShipLatestPosition(shipId string) (*ShipPosition, error) {
+	org, bucket := influxOrgBucket()
+	queryAPI := Infra.Influx.QueryAPI(org)
+
+	fluxQuery := fmt.Sprintf(`
+		from(bucket: "%s")
+			|> range(start: -100y)
+			|> filter(fn: (r) => r["_measurement"] == "%s")
+			|> filter(fn: (r) => r["ship_id"] == "%s")
+			|> filter(fn: (r) => r["_field"] == "latitude" or r["_field"] == "longitude")
+			|> last()
+			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+	`, bucket, measurement, escapeFluxString(shipId))
+
+	result, err := queryAPI.Query(context.Background(), fluxQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer result.Close()
+
+	var pos *ShipPosition
+	var latestTime time.Time
+
+	for result.Next() {
+		record := result.Record()
+		t := record.Time()
+		if pos != nil && !t.After(latestTime) {
+			continue
+		}
+		lat, latOk := record.ValueByKey("latitude").(float64)
+		lng, lngOk := record.ValueByKey("longitude").(float64)
+		if !latOk || !lngOk {
+			continue
+		}
+		shipType, _ := record.ValueByKey("ship_type").(string)
+		if shipType == "" {
+			shipType = "other"
+		}
+		latestTime = t
+		pos = &ShipPosition{ID: shipId, Lat: lat, Lng: lng, Type: shipType}
+	}
+	if err := result.Err(); err != nil {
+		return nil, err
+	}
+	return pos, nil
+}
+
 // FetchShipPositionsByOwner returns the latest known position of every ship
 // ever reported by the given owner.
 func FetchShipPositionsByOwner(ownerEmail string) ([]ShipPosition, error) {

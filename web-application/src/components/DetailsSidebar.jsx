@@ -22,8 +22,9 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
     shipLoader.loadDetails(shipId, setShipDetails);
   }, [shipId]);
 
-  const handleDisplayRoute = () => {
-    onDisplayRoute(shipDetails.route || []);
+  const handleDisplayRoute = async () => {
+    const route = await shipLoader.loadRoute(shipId);
+    onDisplayRoute(route);
   };
 
   // Ship type comes from the backend as a raw key (e.g. "yacht"), so it
@@ -69,7 +70,7 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
           Storage doesn't guarantee the object exists, so fall back silently
           on load error). */}
       {shipDetails.image_url && !imageFailed && (
-        <Box sx={{ ...cardSx, p: 0, height: IMAGE_HEIGHT, overflow: 'hidden', border: 2, borderColor: 'secondary.main' }}>
+        <Box sx={{ ...cardSx, p: 0, height: IMAGE_HEIGHT, overflow: 'hidden' }}>
           <img
             src={shipDetails.image_url}
             alt={shipDetails.ship_id}
@@ -77,7 +78,7 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
               width: '100%',
               height: '100%',
               display: 'block',
-              objectFit: 'cover',
+              objectFit: 'contain',
             }}
             onError={() => setImageFailed(true)}
           />
@@ -96,12 +97,26 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
         >
           {strings.shipId}
         </Typography>
-        <Typography
-          variant="body1"
-          sx={{ color: 'secondary.contrastText', fontSize: { xs: '0.8rem', sm: '1rem' } }}
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}
         >
-          {shipDetails.ship_id}
-        </Typography>
+          {shipDetails.country && (
+            <img
+              src={`https://flagcdn.com/24x18/${shipDetails.country.toLowerCase()}.png`}
+              alt={shipDetails.country}
+              style={{ display: 'block' }}
+            />
+          )}
+          <Typography
+            variant="body1"
+            sx={{
+              color: 'secondary.contrastText',
+              fontSize: { xs: '0.8rem', sm: '1rem' },
+            }}
+          >
+            {shipDetails.ship_id}
+          </Typography>
+        </Box>
       </Box>
 
       {/* Ship type */}
