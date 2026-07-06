@@ -37,8 +37,8 @@ func main() {
 	{
 		public.GET("/ships", handlers.GetShips)
 		public.GET("/ships/registered", handlers.IsShipRegistered)
-		public.GET("/ships/:id", handlers.GetShipDetails)
 		public.GET("/ships/:id/route", handlers.GetShipRoute)
+		public.GET("/ships/:id", handlers.GetShipDetails)
 		public.DELETE("/ships/:id", handlers.DeleteShip)
 		public.GET("/ships/owner/:email/list", handlers.GetShipsByOwner)
 	}
