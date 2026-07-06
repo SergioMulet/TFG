@@ -7,9 +7,12 @@ export const shipLoader = {
     return () => socket.close();
   },
 
-  loadDetails: async (shipId, setRouteState) => {
-    console.log(`[ShipLoader] Searching routes for: ${shipId}`);
-    const coordinates = await shipService.getShipDetails(shipId);
-    setRouteState(coordinates);
+  loadDetails: async (shipId, setShipDetails) => {
+    const details = await shipService.getShipDetails(shipId);
+    setShipDetails(details);
+  },
+
+  loadRoute: async (shipId) => {
+    return await shipService.getShipRoute(shipId);
   },
 };

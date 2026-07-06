@@ -29,12 +29,12 @@ type ShipData struct {
 }
 
 type ShipDetails struct {
-	ShipId   string        `json:"ship_id"`
-	Type     string        `json:"type"`
-	Lat      float64       `json:"lat"`
-	Lng      float64       `json:"lng"`
-	Route    []Coordinates `json:"route"`
-	ImageUrl string        `json:"image_url"`
+	ShipId   string  `json:"ship_id"`
+	Type     string  `json:"type"`
+	Lat      float64 `json:"lat"`
+	Lng      float64 `json:"lng"`
+	ImageUrl string  `json:"image_url"`
+	Country  string  `json:"country"`
 }
 
 func toShipData(positions []repositories.ShipPosition) []ShipData {
@@ -125,27 +125,45 @@ func IsShipRegistered(c *gin.Context) {
 func GetShipDetails(c *gin.Context) {
 	shipId := c.Param("id")
 
+	pos, err := repositories.FetchShipLatestPosition(shipId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if pos == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "ship not found"})
+		return
+	}
+
+	country, _ := repositories.FetchShipCountry(shipId)
+
+	details := ShipDetails{
+		ShipId:   shipId,
+		Type:     pos.Type,
+		Lat:      pos.Lat,
+		Lng:      pos.Lng,
+		ImageUrl: repositories.ShipImageUrl(shipId),
+		Country:  country,
+	}
+
+	c.JSON(http.StatusOK, details)
+}
+
+func GetShipRoute(c *gin.Context) {
+	shipId := c.Param("id")
+
 	route, err := repositories.FetchShipRoute(shipId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	details := ShipDetails{
-		ShipId:   shipId,
-		Type:     route.Type,
-		Lat:      route.Lat,
-		Lng:      route.Lng,
-		ImageUrl: repositories.ShipImageUrl(shipId),
-	}
-	if details.Type == "" {
-		details.Type = "other"
-	}
+	coords := make([]Coordinates, 0, len(route.Points))
 	for _, p := range route.Points {
-		details.Route = append(details.Route, Coordinates{Lat: p.Lat, Lng: p.Lng})
+		coords = append(coords, Coordinates{Lat: p.Lat, Lng: p.Lng})
 	}
 
-	c.JSON(http.StatusOK, details)
+	c.JSON(http.StatusOK, coords)
 }
 
 // GetShipsByOwner lists every ship ever registered by the given owner_email.

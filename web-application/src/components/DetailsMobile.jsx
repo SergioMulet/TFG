@@ -21,8 +21,9 @@ export default function DetailsMobile({ shipId, onBack, onDisplayRoute }) {
     shipLoader.loadDetails(shipId, setShipDetails);
   }, [shipId]);
 
-  const handleDisplayRoute = () => {
-    onDisplayRoute(shipDetails.route || []);
+  const handleDisplayRoute = async () => {
+    const route = await shipLoader.loadRoute(shipId);
+    onDisplayRoute(route);
   };
 
   // Ship type comes from the backend as a raw key (e.g. "yacht"), so it
@@ -32,7 +33,9 @@ export default function DetailsMobile({ shipId, onBack, onDisplayRoute }) {
   const rowSx = { display: 'flex', justifyContent: 'space-between', gap: 1 };
 
   return (
-    <Box sx={{ backgroundColor: 'accent.main', height: '100%', p: 1.5, overflowY: 'auto' }}>
+    <Box
+      sx={{ backgroundColor: 'accent.main', height: '100%', p: 1.5, overflowY: 'auto' }}
+    >
       {/* Back */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
         <IconButton onClick={onBack} size="small" edge="start" aria-label={strings.back}>
@@ -52,14 +55,17 @@ export default function DetailsMobile({ shipId, onBack, onDisplayRoute }) {
             borderRadius: 2,
             overflow: 'hidden',
             mb: 1.5,
-            border: 2,
-            borderColor: 'secondary.main',
           }}
         >
           <img
             src={shipDetails.image_url}
             alt={shipDetails.ship_id}
-            style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }}
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'block',
+              objectFit: 'contain',
+            }}
             onError={() => setImageFailed(true)}
           />
         </Box>
@@ -71,7 +77,16 @@ export default function DetailsMobile({ shipId, onBack, onDisplayRoute }) {
           <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
             {strings.shipId}
           </Typography>
-          <Typography variant="caption">{shipDetails.ship_id}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            {shipDetails.country && (
+              <img
+                src={`https://flagcdn.com/24x18/${shipDetails.country.toLowerCase()}.png`}
+                alt={shipDetails.country}
+                style={{ display: 'block' }}
+              />
+            )}
+            <Typography variant="caption">{shipDetails.ship_id}</Typography>
+          </Box>
         </Box>
         <Box sx={rowSx}>
           <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
