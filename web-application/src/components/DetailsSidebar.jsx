@@ -3,7 +3,6 @@ import { Typography, Box, Divider, IconButton, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import RouteIcon from '@mui/icons-material/Route';
 
-// Importamos tus recursos de internacionalización idénticos al móvil
 import useLanguage from '../internationalization/LanguageContext';
 import translations from '../internationalization/i18n';
 import { shipLoader } from '../services/shipLoader';
@@ -15,7 +14,14 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
   const strings = translations[lang];
 
   const devMock = import.meta.env.DEV
-    ? { ship_id: 'Test1234', type: 'fishing', lat: 43.6842, lng: -6.1054, image_url: null, country: 'ES' }
+    ? {
+        ship_id: 'Test1234',
+        type: 'fishing',
+        lat: 43.6842,
+        lng: -6.1054,
+        image_url: null,
+        country: 'ES',
+      }
     : {};
 
   const [shipDetails, setShipDetails] = useState(devMock);
@@ -56,6 +62,8 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
         border: 3,
         borderColor: 'secondary.main',
         p: { xs: 1, sm: 2 },
+        overflowY: 'auto',
+        boxSizing: 'border-box',
       }}
     >
       {/* Back */}
@@ -87,7 +95,12 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
           <img
             src={shipDetails.image_url}
             alt={shipDetails.ship_id}
-            style={{ width: '100%', height: '100%', display: 'block', objectFit: 'contain' }}
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'block',
+              objectFit: 'contain',
+            }}
             onError={() => setImageFailed(true)}
           />
         </Box>
@@ -184,7 +197,7 @@ export default function DetailsSidebar({ shipId, onBack, onDisplayRoute }) {
       </Box>
 
       {/* Action button */}
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 'auto' }}>
         <Button
           variant="contained"
           color="secondary"
